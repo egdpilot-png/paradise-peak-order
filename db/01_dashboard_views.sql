@@ -134,7 +134,7 @@ conflicts as (
     and o.status in ('submitted', 'locked', 'served')
   join order_items oi on oi.order_id = o.id
   join menu_items mi on mi.id = oi.menu_item_id
-  where mi.allergens ? (
+  where (
     case f.flag
       when 'shellfish_allergy' then 'shellfish'
       when 'nut_allergy' then 'nuts'
@@ -144,7 +144,7 @@ conflicts as (
       when 'vegetarian' then 'meat'
       else f.flag::text
     end
-  )
+  ) = ANY(mi.allergens)
   group by f.service_date, f.guest_id, f.flag, o.id
 )
 select
