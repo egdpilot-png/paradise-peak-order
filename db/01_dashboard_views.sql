@@ -137,9 +137,7 @@ conflicts as (
   where mi.allergens ? (
     case f.flag
       when 'shellfish_allergy' then 'shellfish'
-      when 'fish_allergy' then 'fish'
       when 'nut_allergy' then 'nuts'
-      when 'egg_allergy' then 'egg'
       when 'dairy_free' then 'dairy'
       when 'gluten_free' then 'gluten'
       when 'vegan' then 'animal'
