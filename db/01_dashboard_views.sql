@@ -16,7 +16,6 @@ with rooms as (
     g.room_number,
     g.guest_name,
     g.language,
-    g.party_size,
     g.dietary_flags,
     g.allergy_notes,
     d::date         as service_date
@@ -50,7 +49,6 @@ select
   r.guest_id,
   r.guest_name,
   r.language,
-  r.party_size,
   r.dietary_flags,
   r.allergy_notes,
   o.id            as order_id,
