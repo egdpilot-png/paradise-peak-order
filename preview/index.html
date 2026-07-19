@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Guest QR Order · Preview · Pirate at Night × Paradise Peak</title>
+<style>
+  :root {
+    --paper: #F5F1EA;
+    --paper-alt: #EDE7DC;
+    --ink: #1C1A17;
+    --ink-soft: #4A463F;
+    --ink-faint: #8B867B;
+    --rule: #CBBFA9;
+    --accent: #B8873F;
+    --accent-dark: #8C6425;
+    --error: #A12C7B;
+    --banner-bg: #FBF6EA;
+    --banner-border: #E5D5AE;
+    --banner-text: #6E5A2C;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: linear-gradient(180deg, #E8E1D3 0%, #F5F1EA 40%);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    padding: 32px 16px 96px;
+  }
+  .lab {
+    max-width: 1400px; margin: 0 auto;
+  }
+  .lab-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .lab-header h1 {
+    font-family: Georgia, serif;
+    font-size: 28px;
+    margin: 0 0 8px;
+    font-weight: 400;
+  }
+  .lab-header p {
+    color: var(--ink-faint);
+    font-size: 14px;
+    margin: 0;
+  }
+  .lab-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 32px;
+    align-items: start;
+  }
+  .device {
+    background: #1C1A17;
+    border-radius: 32px;
+    padding: 14px;
+    box-shadow: 0 40px 80px -20px rgba(28, 26, 23, 0.35),
+                0 20px 40px -20px rgba(28, 26, 23, 0.15);
+  }
+  .device-screen {
+    background: var(--paper);
+    border-radius: 22px;
+    overflow: hidden;
+  }
+  .device-label {
+    text-align: center;
+    color: #5A554A;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 14px;
+    padding: 0 8px;
+    line-height: 1.6;
+  }
+  .device-label strong { color: var(--ink); letter-spacing: 1.5px; font-weight: 700; font-size: 12.5px; }
+
+  /* Component styles (mirror styles.module.css) */
+  .frame {
+    padding: 32px 24px 40px;
+    color: var(--ink);
+  }
+  .header {
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--rule);
+    margin-bottom: 24px;
+  }
+  .eyebrow {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 10px;
+    font-weight: 600;
+  }
+  .title {
+    font-family: Georgia, serif;
+    font-size: 26px;
+    line-height: 1.15;
+    font-weight: 400;
+    margin: 0 0 10px;
+  }
+  .subtitle {
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-size: 14px;
+    line-height: 1.4;
+    color: var(--ink-soft);
+    margin: 0 0 10px;
+  }
+  .meta {
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.5px;
+    margin: 0;
+  }
+  .body p, .lead {
+    font-size: 15px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+    margin: 0 0 16px;
+  }
+  .allergyBanner {
+    background: var(--banner-bg);
+    border: 1px solid var(--banner-border);
+    border-radius: 4px;
+    padding: 12px 14px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--banner-text);
+    margin-bottom: 24px;
+  }
+  .allergyBanner strong { color: #4A3B14; }
+  .course { margin-bottom: 28px; }
+  .courseTitle {
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-size: 16px;
+    color: var(--accent);
+    margin: 0 0 12px;
+    font-weight: 400;
+  }
+  .choices { display: flex; flex-direction: column; gap: 10px; }
+  .choice, .choiceSelected {
+    display: block; width: 100%; text-align: left;
+    padding: 14px 16px;
+    background: #FFFFFF;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    cursor: pointer;
+    font: inherit; color: inherit;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .choice:hover { border-color: var(--accent); }
+  .choiceSelected {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .choiceName {
+    display: block;
+    font-family: Georgia, serif;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+  .choiceDesc {
+    display: block;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+  .choiceSelected .choiceDesc { color: #C9C3B6; }
+  .choiceAllergens {
+    display: block;
+    font-size: 10.5px;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    color: #6B665C;
+    font-weight: 600;
+  }
+  .choiceSelected .choiceAllergens { color: #E5B96B; font-weight: 600; }
+  .footerBlock {
+    padding-top: 24px;
+    border-top: 1px solid var(--rule);
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field > span {
+    font-size: 10.5px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .field input, .field textarea {
+    font: inherit;
+    font-size: 13px;
+    padding: 10px 12px;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    background: #FFFFFF;
+    color: var(--ink);
+  }
+  .submit {
+    display: inline-block;
+    text-align: center;
+    padding: 14px 24px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .submit:hover { background: var(--accent); }
+  .finePrint {
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin: 0;
+    font-style: italic;
+    line-height: 1.5;
+  }
+  .summaryList { margin: 20px 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+  .summaryRow {
+    display: grid; grid-template-columns: 80px 1fr; gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #E4DBC8;
+    margin: 0;
+  }
+  .summaryRow dt {
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--ink-faint); padding-top: 2px;
+  }
+  .summaryRow dd {
+    font-family: Georgia, serif; font-size: 14px; margin: 0;
+  }
+  .linkAction {
+    display: inline-block;
+    color: var(--accent);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-bottom: 1px solid var(--accent);
+    padding-bottom: 2px;
+    margin-top: 12px;
+  }
+</style>
+</head>
+<body>
+
+<div class="lab">
+  <div class="lab-header">
+    <h1>Guest QR Ordering — Live Preview</h1>
+    <p>Six states, mobile-sized. This is exactly what a guest sees after scanning the QR code in their room.</p>
+  </div>
+
+  <div class="lab-grid">
+
+    <!-- ============ 1. PLATED — ORDER FORM ============ -->
+    <div>
+      <div class="device"><div class="device-screen">
+        <main class="frame">
+          <header class="header">
+            <p class="eyebrow">Pirate at Night · Tonight</p>
+            <h1 class="title">Menu Grand Case · Tuesday</h1>
+            <p class="subtitle">A three-course tribute to French Caribbean summer</p>
+            <p class="meta">Tuesday, 21 July 2026 · Room 4</p>
+          </header>
+
+          <aside class="allergyBanner">
+            <strong>We have on file:</strong> gluten_free — child (age 6), no spice.
+            The menu below is filtered accordingly.
+          </aside>
+
+          <section class="course">
+            <h2 class="courseTitle">To begin</h2>
+            <div class="choices">
+              <button class="choiceSelected">
+                <span class="choiceName">Tuna tataki</span>
+                <span class="choiceDesc">Seared yellowfin, passion-fruit ponzu, micro-shiso</span>
+                <span class="choiceAllergens">fish · soy</span>
+              </button>
+              <button class="choice">
+                <span class="choiceName">Chilled melon gazpacho</span>
+                <span class="choiceDesc">Charentais melon, basil oil, cucumber caviar</span>
+              </button>
+            </div>
+          </section>
+
+          <section class="course">
+            <h2 class="courseTitle">Main course</h2>
+            <div class="choices">
+              <button class="choice">
+                <span class="choiceName">Sous-vide mahi</span>
+                <span class="choiceDesc">Sauce chien beurre blanc, breadfruit purée, plantain crisp</span>
+                <span class="choiceAllergens">fish · dairy</span>
+              </button>
+              <button class="choiceSelected">
+                <span class="choiceName">Filet mignon</span>
+                <span class="choiceDesc">140g grass-fed, sauce au poivre vert, pommes grenaille</span>
+                <span class="choiceAllergens">dairy</span>
+              </button>
+            </div>
+          </section>
+
+          <section class="course">
+            <h2 class="courseTitle">To finish</h2>
+            <div class="choices">
+              <button class="choiceSelected">
+                <span class="choiceName">Coconut panna cotta</span>
+                <span class="choiceDesc">Roasted pineapple-rum, tuile of cane sugar</span>
+                <span class="choiceAllergens">dairy</span>
+              </button>
+              <button class="choice">
+                <span class="choiceName">Fresh fruit plate</span>
+                <span class="choiceDesc">Local seasonal fruit, lime-mint syrup</span>
+              </button>
+            </div>
+          </section>
+
+          <section class="footerBlock">
+            <label class="field">
+              <span>How many guests?</span>
+              <input type="number" value="3" min="1" max="8" />
+            </label>
+            <label class="field">
+              <span>A note for the chef?</span>
+              <textarea rows="3">No cilantro on the mahi, please. Child eats meat medium.</textarea>
+            </label>
+            <button class="submit">Confirm my order</button>
+            <p class="finePrint">You can change your choice until 10:00 AM today.</p>
+          </section>
+        </main>
+      </div></div>
+      <p class="device-label"><strong>State 1 · Plated night, ordering open</strong><br />Tue/Wed/Fri before 10:00 · full course picker</p>
+    </div>
+
+    <!-- ============ 2. CONFIRMATION ============ -->
+    <div>
+      <div class="device"><div class="device-screen">
+        <main class="frame">
+          <header class="header">
+            <p class="eyebrow">You're booked in</p>
+            <h1 class="title">Menu Grand Case · Tuesday</h1>
+            <p class="meta">Tuesday, 21 July 2026 · 18:00 · PP-2026-0721-04</p>
+          </header>
+
+          <section>
+            <p class="lead"><em>Merci, room 4. Your dinner is with the chef.</em></p>
+            <dl class="summaryList">
+              <div class="summaryRow"><dt>Starter</dt><dd>Tuna tataki</dd></div>
+              <div class="summaryRow"><dt>Main</dt><dd>Filet mignon</dd></div>
+              <div class="summaryRow"><dt>Dessert</dt><dd>Coconut panna cotta</dd></div>
+              <div class="summaryRow"><dt>Guests</dt><dd>3</dd></div>
+              <div class="summaryRow"><dt>Note</dt><dd>No cilantro on the mahi, please. Child eats meat medium.</dd></div>
+            </dl>
+            <p class="finePrint">You can still change your choice until 10:00 AM.</p>
+            <a class="linkAction" href="#">Edit my order</a>
+          </section>
+        </main>
+      </div></div>
+      <p class="device-label"><strong>State 2 · After submitting</strong><br />Editable until 10:00 · re-scan any time</p>
+    </div>
+
+    <!-- ============ 3. BUFFET NIGHT ============ -->
+    <div>
+      <div class="device"><div class="device-screen">
+        <main class="frame">
+          <header class="header">
+            <p class="eyebrow">Tonight · Caribbean Buffet</p>
+            <h1 class="title">Buffet Caraïbe · Monday</h1>
+            <p class="meta">Monday, 20 July 2026 · 18:00 · Room 7</p>
+          </header>
+
+          <section>
+            <p class="lead">A self-serve buffet. Help yourself any time between 18:00 and 22:00. All we need to know is how many of you are joining.</p>
+
+            <aside class="allergyBanner">
+              <strong>We have on file:</strong> shellfish_allergy — severe shellfish.
+              The buffet will include a clearly labelled option for you.
+            </aside>
+          </section>
+
+          <section class="footerBlock">
+            <label class="field">
+              <span>How many guests?</span>
+              <input type="number" value="2" min="1" max="8" />
+            </label>
+            <label class="field">
+              <span>A note for us?</span>
+              <textarea rows="3">Anniversary tonight — a quiet corner table if possible.</textarea>
+            </label>
+            <button class="submit">Confirm</button>
+          </section>
+        </main>
+      </div></div>
+      <p class="device-label"><strong>State 3 · Buffet night (Mon/Thu)</strong><br />Headcount + dietary only · no course picker</p>
+    </div>
+
+    <!-- ============ 4. LOCKED — WHATSAPP CTA ============ -->
+    <div>
+      <div class="device"><div class="device-screen">
+        <main class="frame">
+          <header class="header">
+            <p class="eyebrow">Pirate at Night</p>
+            <h1 class="title">The chef is already at work.</h1>
+            <p class="meta">Tuesday, 21 July 2026 · Room 12</p>
+          </header>
+
+          <section>
+            <p class="lead">The automatic ordering window closed at 10:00, but we'll do our best to have you tonight. Send us a note on WhatsApp.</p>
+            <a class="submit" href="#">Message Pirate at Night</a>
+            <p class="finePrint" style="margin-top:16px;">We'll confirm by return message, usually within 30 minutes.</p>
+          </section>
+        </main>
+      </div></div>
+      <p class="device-label"><strong>State 4 · Between 10:00 and 14:00</strong><br />Late-order window · WhatsApp escalation only</p>
+    </div>
+
+    <!-- ============ 5. PAST HARD LOCK ============ -->
+    <div>
+      <div class="device"><div class="device-screen">
+        <main class="frame">
+          <header class="header">
+            <p class="eyebrow">Pirate at Night · Tonight</p>
+            <h1 class="title">Room 12, you're taken care of.</h1>
+          </header>
+          <section>
+            <p class="lead">You haven't placed an order today, so the chef is choosing for you. Expect three courses at 18:00 — a starter, a main, and something sweet to finish.</p>
+            <p class="lead">Tomorrow's menu will be at your table at breakfast. Sleep well.</p>
+          </section>
+        </main>
+      </div></div>
+      <p class="device-label"><strong>State 5 · After 14:00 hard lock</strong><br />Chef's choice · no action required from guest</p>
+    </div>
+
+    <!-- ============ 6. FRENCH-LANGUAGE VARIANT ============ -->
+    <div>
+      <div class="device"><div class="device-screen">
+        <main class="frame">
+          <header class="header">
+            <p class="eyebrow">Pirate at Night · Ce soir</p>
+            <h1 class="title">Menu Grand Case · mardi</h1>
+            <p class="subtitle">Un menu trois plats en hommage à l'été antillais</p>
+            <p class="meta">mardi 21 juillet 2026 · Chambre 7</p>
+          </header>
+
+          <aside class="allergyBanner">
+            <strong>Nous avons noté :</strong> shellfish_allergy — severe shellfish.
+            Le menu ci-dessous est filtré pour vous.
+          </aside>
+
+          <section class="course">
+            <h2 class="courseTitle">Pour commencer</h2>
+            <div class="choices">
+              <button class="choice">
+                <span class="choiceName">Gaspacho de melon</span>
+                <span class="choiceDesc">Melon charentais, huile de basilic</span>
+              </button>
+              <button class="choiceSelected">
+                <span class="choiceName">Burrata et tomates anciennes</span>
+                <span class="choiceDesc">Burrata des Pouilles, perles de balsamique</span>
+                <span class="choiceAllergens">dairy</span>
+              </button>
+            </div>
+          </section>
+
+          <section class="course">
+            <h2 class="courseTitle">Le plat</h2>
+            <div class="choices">
+              <button class="choiceSelected">
+                <span class="choiceName">Filet de bœuf</span>
+                <span class="choiceDesc">140g, sauce au poivre vert, pommes grenaille</span>
+                <span class="choiceAllergens">dairy</span>
+              </button>
+              <button class="choice">
+                <span class="choiceName">Pleurotes du panicaut</span>
+                <span class="choiceDesc">Glacé au miso, quinoa-freekeh</span>
+              </button>
+            </div>
+          </section>
+
+          <section class="footerBlock" style="margin-top: 16px;">
+            <button class="submit">Confirmer ma commande</button>
+            <p class="finePrint">Vous pourrez modifier votre choix jusqu'à 10h00 ce matin.</p>
+          </section>
+        </main>
+      </div></div>
+      <p class="device-label"><strong>State 6 · French-language variant</strong><br />Auto-selected from guest.language column</p>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

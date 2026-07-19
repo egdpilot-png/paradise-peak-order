@@ -1,0 +1,244 @@
+/* Editorial, hospitality-forward styling — matches the Pirate at Night
+   / Villa Catering Box brand system (warm off-white, deep ink, brass accent). */
+
+.frame {
+  min-height: 100vh;
+  background: #F5F1EA;
+  color: #1C1A17;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  padding: 32px 24px 96px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.header {
+  padding-bottom: 32px;
+  border-bottom: 1px solid #CBBFA9;
+  margin-bottom: 32px;
+}
+
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #B8873F;
+  margin: 0 0 12px;
+  font-weight: 600;
+}
+
+.title {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 34px;
+  line-height: 1.15;
+  font-weight: 400;
+  margin: 0 0 12px;
+  color: #1C1A17;
+}
+
+.subtitle {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-size: 17px;
+  line-height: 1.4;
+  color: #4A463F;
+  margin: 0 0 12px;
+}
+
+.meta {
+  font-size: 13px;
+  color: #8B867B;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.body { padding: 0 0 24px; }
+
+.lead {
+  font-size: 17px;
+  line-height: 1.55;
+  color: #4A463F;
+  margin: 0 0 20px;
+}
+
+.allergyBanner {
+  background: #FBF6EA;
+  border: 1px solid #E5D5AE;
+  border-radius: 4px;
+  padding: 14px 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #6E5A2C;
+  margin-bottom: 32px;
+}
+.allergyBanner strong { color: #4A3B14; }
+
+.course { margin-bottom: 40px; }
+
+.courseTitle {
+  font-family: Georgia, serif;
+  font-style: italic;
+  font-size: 20px;
+  color: #B8873F;
+  margin: 0 0 16px;
+  font-weight: 400;
+  letter-spacing: 0.3px;
+}
+
+.choices { display: flex; flex-direction: column; gap: 12px; }
+
+.choice, .choiceSelected {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 18px 20px;
+  background: #FFFFFF;
+  border: 1px solid #CBBFA9;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, transform 0.05s;
+  font: inherit;
+  color: inherit;
+}
+.choice:hover { border-color: #B8873F; }
+.choice:active { transform: scale(0.995); }
+
+.choiceSelected {
+  background: #1C1A17;
+  color: #F5F1EA;
+  border-color: #1C1A17;
+}
+.choiceSelected .choiceDesc { color: #C9C3B6; }
+.choiceSelected .choiceAllergens { color: #B8873F; }
+
+.choiceName {
+  display: block;
+  font-family: Georgia, serif;
+  font-size: 18px;
+  font-weight: 400;
+  margin-bottom: 6px;
+}
+.choiceDesc {
+  display: block;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: #4A463F;
+  margin-bottom: 6px;
+}
+.choiceAllergens {
+  display: block;
+  font-size: 10.5px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #8B867B;
+}
+
+.footerBlock {
+  padding-top: 32px;
+  border-top: 1px solid #CBBFA9;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.field { display: flex; flex-direction: column; gap: 8px; }
+.field > span {
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #8B867B;
+}
+.field input, .field textarea {
+  font: inherit;
+  font-size: 15px;
+  padding: 12px 14px;
+  border: 1px solid #CBBFA9;
+  border-radius: 4px;
+  background: #FFFFFF;
+  color: #1C1A17;
+  resize: vertical;
+}
+.field input:focus, .field textarea:focus {
+  outline: none;
+  border-color: #B8873F;
+  box-shadow: 0 0 0 2px rgba(184, 135, 63, 0.15);
+}
+.field input[disabled], .field textarea[disabled] {
+  background: #EDE7DC;
+  color: #8B867B;
+}
+
+.submit {
+  display: inline-block;
+  text-align: center;
+  padding: 16px 24px;
+  background: #1C1A17;
+  color: #F5F1EA;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.15s;
+}
+.submit:hover { background: #B8873F; }
+.submit[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+.finePrint {
+  font-size: 12px;
+  color: #8B867B;
+  margin: 0;
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.error {
+  color: #A12C7B;
+  font-size: 14px;
+  margin: 0;
+}
+
+.summary { padding-bottom: 24px; }
+.summaryList {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 24px 0;
+  padding: 0;
+}
+.summaryRow {
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #E4DBC8;
+  margin: 0;
+}
+.summaryRow dt {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #8B867B;
+  padding-top: 3px;
+}
+.summaryRow dd {
+  font-family: Georgia, serif;
+  font-size: 16px;
+  color: #1C1A17;
+  margin: 0;
+}
+
+.linkAction {
+  display: inline-block;
+  margin-top: 16px;
+  color: #B8873F;
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-bottom: 1px solid #B8873F;
+  padding-bottom: 3px;
+}
+.linkAction:hover { color: #8C6425; border-color: #8C6425; }

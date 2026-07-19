@@ -1,0 +1,527 @@
+/* Dashboard styling — shares brand tokens with the guest QR page:
+   warm paper #F5F1EA, ink #1C1A17, brass #B8873F. Denser layout;
+   works from 375px phone through 1440px desktop. */
+
+.page {
+  min-height: 100vh;
+  background: #F5F1EA;
+  color: #1C1A17;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+}
+
+/* -------- Header rail -------- */
+.headerRail {
+  background: #1C1A17;
+  color: #F5F1EA;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.headerLeft { flex: 1 1 320px; }
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.eyebrow {
+  font-size: 10.5px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #B8873F;
+  margin: 0 0 6px;
+  font-weight: 600;
+}
+.headerTitle {
+  font-family: Georgia, serif;
+  font-size: 26px;
+  line-height: 1.15;
+  font-weight: 400;
+  margin: 0 0 4px;
+}
+.headerSubtitle {
+  font-size: 13px;
+  color: #C9C3B6;
+  margin: 0;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  border: 1px solid transparent;
+}
+.toneGood     { background: #E8F0E4; color: #2F5A18; border-color: #C6DDBB; }
+.toneWarn     { background: #FBF1DC; color: #8C6425; border-color: #E9D294; }
+.toneCrit     { background: #F7DFE9; color: #7C1E5A; border-color: #E7A4C6; }
+.tonePending  { background: #E4E0D6; color: #4A463F; border-color: #CBBFA9; }
+.toneMuted    { background: transparent; color: #8B867B; border-color: #454340; }
+
+.liveDot {
+  width: 8px;
+  height: 8px;
+  background: #6DAA45;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(109, 170, 69, 0.6); }
+  50% { opacity: 0.6; box-shadow: 0 0 0 6px rgba(109, 170, 69, 0); }
+}
+.liveText { font-size: 11px; color: #C9C3B6; letter-spacing: 0.5px; }
+
+/* -------- Main container -------- */
+.main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 24px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* -------- KPI tiles -------- */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+.kpiTile {
+  background: #FFFFFF;
+  border: 1px solid #CBBFA9;
+  border-radius: 8px;
+  padding: 20px 22px;
+}
+.kpiWarn {
+  background: #FBF1DC;
+  border-color: #E9D294;
+}
+.kpiMuted {
+  background: #EDE7DC;
+  border-color: #CBBFA9;
+}
+.kpiLabel {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #8B867B;
+  margin: 0 0 12px;
+  font-weight: 600;
+}
+.kpiValue {
+  font-family: Georgia, serif;
+  font-size: 42px;
+  font-weight: 400;
+  line-height: 1;
+  margin: 0 0 8px;
+  color: #1C1A17;
+  font-variant-numeric: tabular-nums;
+}
+.kpiWarn .kpiValue { color: #8C6425; }
+.kpiSub {
+  font-size: 12.5px;
+  color: #4A463F;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* -------- Two-column layout for tally & allergy -------- */
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+@media (min-width: 900px) {
+  .twoCol { grid-template-columns: 1fr 1fr; }
+}
+
+/* -------- Panels (course tally, allergy matrix) -------- */
+.panel {
+  background: #FFFFFF;
+  border: 1px solid #CBBFA9;
+  border-radius: 8px;
+  padding: 22px 24px;
+}
+.panelHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.panelTitle {
+  font-family: Georgia, serif;
+  font-size: 20px;
+  font-weight: 400;
+  margin: 0;
+  color: #1C1A17;
+}
+.panelMeta {
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #8B867B;
+}
+.emptyState {
+  font-size: 14px;
+  color: #8B867B;
+  font-style: italic;
+  margin: 12px 0 0;
+}
+
+/* -------- Course tally -------- */
+.tallyGrid { display: flex; flex-direction: column; gap: 20px; }
+.tallyCourse {}
+.tallyCourseTitle {
+  font-family: Georgia, serif;
+  font-style: italic;
+  font-size: 15px;
+  color: #B8873F;
+  margin: 0 0 10px;
+  font-weight: 400;
+}
+.tallyList { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.tallyRow {}
+.tallyRowText {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+.tallyName {
+  font-family: Georgia, serif;
+  font-size: 14.5px;
+  color: #1C1A17;
+}
+.tallyCount {
+  font-size: 13px;
+  font-weight: 600;
+  color: #4A463F;
+  font-variant-numeric: tabular-nums;
+}
+.tallyBar {
+  height: 4px;
+  background: #EDE7DC;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.tallyBarFill {
+  height: 100%;
+  background: #B8873F;
+  border-radius: 2px;
+  transition: width 0.4s ease-out;
+}
+
+/* -------- Allergy matrix -------- */
+.allergyList { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+.allergyRow {
+  padding: 12px 14px;
+  border: 1px solid #E4DBC8;
+  border-radius: 6px;
+  background: #FBF9F4;
+}
+.allergyRowConflict {
+  background: #FBEEF3;
+  border-color: #E7A4C6;
+}
+.allergyFlag {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #4A463F;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.allergyRowConflict .allergyFlag { color: #7C1E5A; }
+.allergyGuests { display: flex; flex-direction: column; gap: 6px; }
+.allergyGuest {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.allergyRoom {
+  display: inline-block;
+  min-width: 60px;
+  font-family: Georgia, serif;
+  font-size: 13px;
+  color: #1C1A17;
+  font-weight: 600;
+}
+.allergyName { color: #4A463F; }
+.allergyNote { font-style: italic; color: #8B867B; font-size: 12px; }
+
+/* -------- Room strip -------- */
+.roomGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+.roomCard {
+  background: #FFFFFF;
+  border: 1px solid #CBBFA9;
+  border-radius: 8px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.roomHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+.roomLabel {
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #8B867B;
+  margin: 0 0 2px;
+  font-weight: 600;
+}
+.roomNumber {
+  font-family: Georgia, serif;
+  font-size: 26px;
+  font-weight: 400;
+  margin: 0;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.roomGuest {
+  font-size: 13.5px;
+  color: #1C1A17;
+  margin: 0;
+}
+.roomMeta {
+  font-size: 12px;
+  color: #8B867B;
+}
+.roomFlags {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.roomFlag {
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #6E5A2C;
+  background: #FBF6EA;
+  border: 1px solid #E5D5AE;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+.roomCourses {
+  list-style: none;
+  padding: 10px 0 0;
+  margin: 4px 0 0;
+  border-top: 1px solid #E4DBC8;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.roomCourse {
+  display: grid;
+  grid-template-columns: 60px 1fr;
+  gap: 10px;
+  align-items: baseline;
+}
+.roomCourseType {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #8B867B;
+  font-weight: 600;
+}
+.roomCourseDish {
+  font-family: Georgia, serif;
+  font-size: 14px;
+  color: #1C1A17;
+}
+.roomNote {
+  font-family: Georgia, serif;
+  font-size: 14px;
+  color: #4A463F;
+  margin: 4px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid #E4DBC8;
+  font-style: italic;
+}
+.roomNoteMuted {
+  font-size: 13px;
+  color: #8B867B;
+  font-style: italic;
+  margin: 4px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid #E4DBC8;
+}
+.roomNoteQuote {
+  font-size: 12.5px;
+  color: #6E5A2C;
+  background: #FBF6EA;
+  border-left: 3px solid #B8873F;
+  padding: 8px 10px;
+  margin: 0;
+  font-style: italic;
+  border-radius: 0 4px 4px 0;
+}
+.roomRef {
+  font-size: 10.5px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #8B867B;
+  margin: 4px 0 0;
+  font-family: 'SF Mono', Consolas, monospace;
+}
+
+/* -------- Action rail -------- */
+.actionRail {
+  background: #1C1A17;
+  color: #F5F1EA;
+  border-radius: 8px;
+  padding: 22px 24px;
+}
+.actionTitle {
+  font-family: Georgia, serif;
+  font-size: 18px;
+  font-weight: 400;
+  margin: 0 0 16px;
+  color: #F5F1EA;
+}
+.actionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+.actionBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 14px 16px;
+  background: #2A2725;
+  color: #F5F1EA;
+  border: 1px solid #454340;
+  border-radius: 6px;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+}
+.actionBtn:hover:not(:disabled) {
+  background: #35322F;
+  border-color: #B8873F;
+}
+.actionBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.actionLabel {
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.actionSub {
+  font-size: 11.5px;
+  color: #A8A29A;
+  line-height: 1.4;
+}
+.actionStatus {
+  margin: 12px 0 0;
+  font-size: 12.5px;
+  color: #E5B96B;
+  font-style: italic;
+}
+
+/* -------- Modal -------- */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(28, 26, 23, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+.modal {
+  background: #F5F1EA;
+  color: #1C1A17;
+  border-radius: 8px;
+  padding: 24px;
+  max-width: 520px;
+  width: 100%;
+  max-height: 80vh;
+  overflow: auto;
+}
+.modalTitle {
+  font-family: Georgia, serif;
+  font-size: 18px;
+  font-weight: 400;
+  margin: 0 0 12px;
+}
+.modalBody {
+  background: #FFFFFF;
+  border: 1px solid #CBBFA9;
+  border-radius: 4px;
+  padding: 14px;
+  font-family: 'SF Mono', Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  color: #1C1A17;
+  margin: 0 0 16px;
+  max-height: 40vh;
+  overflow: auto;
+}
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+.btnGhost {
+  padding: 10px 18px;
+  background: transparent;
+  border: 1px solid #CBBFA9;
+  color: #1C1A17;
+  border-radius: 4px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+}
+.btnPrimary {
+  padding: 10px 18px;
+  background: #1C1A17;
+  border: none;
+  color: #F5F1EA;
+  border-radius: 4px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+.btnPrimary:hover { background: #B8873F; }
+
+/* -------- Footer -------- */
+.footer {
+  padding-top: 24px;
+  border-top: 1px solid #CBBFA9;
+  font-size: 11.5px;
+  color: #8B867B;
+  letter-spacing: 0.5px;
+  text-align: center;
+}

@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Weekend Menu Publisher · Paradise Peak</title>
+<style>
+* { box-sizing: border-box; }
+body { margin: 0; background: #F5F1EA; color: #1C1A17; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+
+/* Header rail */
+.header { background: #1C1A17; color: #F5F1EA; padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; gap: 24px; flex-wrap: wrap; }
+.eyebrow { font-size: 10.5px; letter-spacing: 3px; text-transform: uppercase; color: #B8873F; margin: 0 0 6px; font-weight: 600; }
+.h-title { font-family: Georgia, serif; font-size: 22px; font-weight: 400; margin: 0 0 4px; }
+.h-sub { font-size: 12.5px; color: #C9C3B6; margin: 0; }
+.rail { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.rail-status { font-size: 12px; font-style: italic; margin: 0 8px 0 0; color: #A9D289; }
+.btn-ghost, .btn-primary { padding: 10px 18px; border-radius: 4px; font-size: 12.5px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; font-weight: 600; border: 1px solid transparent; }
+.btn-ghost { background: transparent; border-color: #454340; color: #F5F1EA; }
+.btn-primary { background: #B8873F; color: #1C1A17; border: none; }
+
+/* Workspace */
+.workspace { display: grid; grid-template-columns: 320px 1fr 320px; gap: 20px; padding: 20px 24px 40px; max-width: 1600px; margin: 0 auto; align-items: start; }
+
+/* Library */
+.library-inner { background: #FFFFFF; border: 1px solid #CBBFA9; border-radius: 8px; padding: 18px 18px 12px; }
+.lib-head-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 4px; }
+.lib-title { font-family: Georgia, serif; font-size: 17px; font-weight: 400; margin: 0; }
+.lib-new-btn { border: 1px solid #B8873F; background: #FBF6EA; color: #6E5A2C; font-size: 11px; letter-spacing: 0.4px; padding: 4px 10px; border-radius: 999px; cursor: pointer; font-weight: 600; font-family: inherit; }
+.lib-meta { font-size: 11.5px; color: #8B867B; margin: 0 0 12px; line-height: 1.5; }
+.lib-meta strong { color: #1C1A17; }
+
+/* New dish form */
+.nd-form { background: #FDFCF9; border: 1px solid #B8873F; border-radius: 6px; padding: 14px 14px 12px; margin-bottom: 14px; box-shadow: 0 4px 12px -6px rgba(184, 135, 63, 0.35); }
+.nd-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.nd-title { font-family: Georgia, serif; font-size: 14px; font-weight: 400; margin: 0; color: #1C1A17; }
+.nd-close { width: 22px; height: 22px; border: none; background: transparent; color: #8B867B; font-size: 18px; line-height: 1; cursor: pointer; padding: 0; border-radius: 3px; font-family: inherit; }
+.nd-field { display: block; margin-bottom: 10px; }
+.nd-label { display: block; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #6B665C; font-weight: 600; margin-bottom: 4px; }
+.nd-input, .nd-textarea { width: 100%; padding: 7px 10px; border: 1px solid #CBBFA9; border-radius: 4px; font-size: 13px; font-family: Georgia, serif; background: #FFFFFF; color: #1C1A17; box-sizing: border-box; }
+.nd-textarea { font-family: inherit; font-size: 12px; resize: vertical; }
+.nd-course-row, .nd-chip-row { display: flex; flex-wrap: wrap; gap: 4px; }
+.nd-course-btn { padding: 4px 10px; border-radius: 4px; border: 1px solid #CBBFA9; background: #FFFFFF; font-size: 11px; letter-spacing: 0.4px; cursor: pointer; color: #4A463F; font-family: inherit; font-weight: 600; }
+.nd-course-btn-on { background: #1C1A17; border-color: #1C1A17; color: #F5F1EA; }
+.nd-chip { padding: 3px 9px; border-radius: 999px; border: 1px solid #CBBFA9; background: #FFFFFF; font-size: 10.5px; letter-spacing: 0.4px; cursor: pointer; color: #4A463F; font-family: inherit; font-weight: 600; text-transform: uppercase; }
+.nd-chip-on { background: #FBF6EA; border-color: #B8873F; color: #6E5A2C; }
+.nd-chip-al-on { background: #FBEEF3; border-color: #C56AA0; color: #7C1E5A; }
+.nd-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px; padding-top: 10px; border-top: 1px solid #E4DBC8; }
+.nd-cancel, .nd-save { padding: 7px 14px; border-radius: 4px; font-size: 11px; letter-spacing: 0.8px; text-transform: uppercase; cursor: pointer; font-weight: 600; font-family: inherit; border: 1px solid transparent; }
+.nd-cancel { background: transparent; border-color: #CBBFA9; color: #4A463F; }
+.nd-save { background: #B8873F; color: #1C1A17; border: none; }
+.lib-filter { width: 100%; padding: 8px 12px; border: 1px solid #CBBFA9; border-radius: 4px; font-size: 13px; background: #FDFCF9; color: #1C1A17; margin-bottom: 10px; font-family: inherit; }
+.lib-tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; }
+.lib-tab { padding: 4px 10px; border-radius: 999px; border: 1px solid #CBBFA9; background: #FFFFFF; font-size: 11px; letter-spacing: 0.5px; cursor: pointer; color: #4A463F; font-family: inherit; }
+.lib-tab-active { background: #1C1A17; border-color: #1C1A17; color: #F5F1EA; }
+.lib-course-title { font-family: Georgia, serif; font-style: italic; font-size: 13px; color: #B8873F; margin: 14px 0 8px; font-weight: 400; }
+.lib-course-title:first-child { margin-top: 0; }
+.lib-dishes { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.lib-dish { padding: 10px 12px; background: #FDFCF9; border: 1px solid #E4DBC8; border-radius: 5px; cursor: pointer; }
+.lib-dish:hover { border-color: #B8873F; background: #FBF6EA; }
+.lib-dish-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 3px; }
+.lib-dish-name { font-family: Georgia, serif; font-size: 13.5px; color: #1C1A17; line-height: 1.3; }
+.lib-dish-stat { font-size: 10px; color: #8B867B; letter-spacing: 0.5px; }
+.lib-dish-desc { font-size: 11.5px; color: #4A463F; line-height: 1.4; margin: 0 0 5px; }
+.lib-dish-foot { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.lib-tag { font-size: 9.5px; letter-spacing: 0.5px; text-transform: uppercase; color: #6E5A2C; background: #FBF6EA; border: 1px solid #E5D5AE; padding: 1px 6px; border-radius: 999px; font-weight: 600; }
+.lib-allergen { font-size: 9.5px; letter-spacing: 1px; text-transform: uppercase; color: #8B867B; }
+
+/* Builder */
+.builder { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.builder-card { background: #FFFFFF; border: 1px solid #CBBFA9; border-radius: 8px; padding: 22px 24px; }
+.builder-card-focused { border-color: #B8873F; box-shadow: 0 0 0 3px rgba(184, 135, 63, 0.12); }
+.builder-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 20px; padding-bottom: 18px; border-bottom: 1px solid #E4DBC8; }
+.builder-day { font-size: 10.5px; letter-spacing: 2px; text-transform: uppercase; color: #B8873F; margin: 0 0 6px; font-weight: 600; }
+.builder-title { font-family: Georgia, serif; font-size: 24px; font-weight: 400; margin: 0 0 4px; color: #1C1A17; }
+.builder-sub { font-family: Georgia, serif; font-style: italic; font-size: 14px; color: #4A463F; margin: 0; }
+.builder-count { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #8B867B; font-weight: 600; }
+.builder-courses { display: flex; flex-direction: column; gap: 20px; }
+.bc-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+.bc-title { font-family: Georgia, serif; font-style: italic; font-size: 15px; color: #B8873F; margin: 0; font-weight: 400; }
+.bc-count { font-size: 10.5px; color: #8B867B; letter-spacing: 1px; text-transform: uppercase; }
+.bc-dishes { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.bc-dish { display: grid; grid-template-columns: 20px 1fr auto; gap: 10px; align-items: center; background: #FDFCF9; border: 1px solid #E4DBC8; border-radius: 5px; padding: 10px 12px; }
+.bc-grip { color: #B8873F; font-size: 16px; text-align: center; }
+.bc-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.bc-name { font-family: Georgia, serif; font-size: 14.5px; color: #1C1A17; line-height: 1.3; }
+.bc-desc { font-size: 11.5px; color: #4A463F; line-height: 1.4; }
+.bc-allergens { font-size: 9.5px; letter-spacing: 1px; text-transform: uppercase; color: #6B665C; font-weight: 600; }
+.bc-actions { display: flex; gap: 4px; align-items: center; }
+.bc-btn, .bc-btn-danger { width: 26px; height: 26px; border: 1px solid #CBBFA9; background: #FFFFFF; border-radius: 3px; cursor: pointer; font-size: 13px; color: #4A463F; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0; font-family: inherit; }
+.bc-btn-danger { color: #A12C7B; border-color: #E7A4C6; background: #FDF5F9; }
+.bc-empty { border: 1px dashed #CBBFA9; border-radius: 5px; padding: 16px; text-align: center; font-size: 12.5px; color: #8B867B; font-style: italic; background: #FDFCF9; }
+
+/* Preview */
+.preview-label { font-size: 10.5px; letter-spacing: 2px; text-transform: uppercase; color: #8B867B; margin: 0 0 10px; font-weight: 600; text-align: center; }
+.preview-phone { background: #1C1A17; border-radius: 24px; padding: 10px; box-shadow: 0 20px 40px -10px rgba(28, 26, 23, 0.25); }
+.preview-frame { background: #F5F1EA; border-radius: 18px; padding: 22px 20px; min-height: 400px; }
+.pf-eyebrow { font-size: 9.5px; letter-spacing: 2.5px; text-transform: uppercase; color: #B8873F; margin: 0 0 8px; font-weight: 600; }
+.pf-title { font-family: Georgia, serif; font-size: 22px; font-weight: 400; margin: 0 0 6px; line-height: 1.15; }
+.pf-sub { font-family: Georgia, serif; font-style: italic; font-size: 12.5px; color: #4A463F; margin: 0 0 6px; }
+.pf-meta { font-size: 10.5px; color: #8B867B; margin: 0 0 18px; padding-bottom: 14px; border-bottom: 1px solid #CBBFA9; }
+.pf-course { margin-bottom: 18px; }
+.pf-course-title { font-family: Georgia, serif; font-style: italic; font-size: 13px; color: #B8873F; margin: 0 0 8px; font-weight: 400; }
+.pf-choices { display: flex; flex-direction: column; gap: 6px; }
+.pf-choice, .pf-choice-on { padding: 8px 10px; border: 1px solid #CBBFA9; border-radius: 4px; background: #FFFFFF; }
+.pf-choice-on { background: #1C1A17; border-color: #1C1A17; color: #F5F1EA; }
+.pf-choice-name { display: block; font-family: Georgia, serif; font-size: 12.5px; margin-bottom: 2px; }
+.pf-choice-desc { display: block; font-size: 10.5px; color: #4A463F; line-height: 1.4; margin-bottom: 3px; }
+.pf-choice-on .pf-choice-desc { color: #C9C3B6; }
+.pf-choice-allergens { display: block; font-size: 8.5px; letter-spacing: 1.5px; text-transform: uppercase; color: #6B665C; font-weight: 600; }
+.pf-choice-on .pf-choice-allergens { color: #E5B96B; }
+
+@media (max-width: 1200px) {
+  .workspace { grid-template-columns: 280px 1fr; }
+  .preview-col { display: none; }
+}
+@media (max-width: 900px) {
+  .workspace { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div>
+    <p class="eyebrow">Pirate at Night · Publisher</p>
+    <h1 class="h-title">Weekend menu · 18–19 July 2026</h1>
+    <p class="h-sub">14 guests in house · 9 EN / 5 FR · Kitchen ops · Eugene Duzant</p>
+  </div>
+  <div class="rail">
+    <p class="rail-status">Draft saved · 2 minutes ago</p>
+    <button class="btn-ghost">Save draft</button>
+    <button class="btn-primary">Publish &amp; notify</button>
+  </div>
+</header>
+
+<div class="workspace">
+
+  <!-- Library -->
+  <aside>
+    <div class="library-inner">
+      <div class="lib-head-row">
+        <h2 class="lib-title">Dish library</h2>
+        <button class="lib-new-btn">+ New dish</button>
+      </div>
+      <p class="lib-meta">38 dishes · click to add to <strong>Saturday</strong></p>
+
+      <!-- New dish form (expanded) -->
+      <div class="nd-form">
+        <div class="nd-head">
+          <h3 class="nd-title">New dish</h3>
+          <button class="nd-close">×</button>
+        </div>
+        <div class="nd-field">
+          <span class="nd-label">Name</span>
+          <input class="nd-input" value="Grilled mahi, sauce vierge">
+        </div>
+        <div class="nd-field">
+          <span class="nd-label">Nom (FR) · optional</span>
+          <input class="nd-input" value="Mahi grillé, sauce vierge">
+        </div>
+        <div class="nd-field">
+          <span class="nd-label">Description</span>
+          <textarea class="nd-textarea" rows="2">Line-caught mahi, tomato-caper vinaigrette, herbs from the garden</textarea>
+        </div>
+        <div class="nd-field">
+          <span class="nd-label">Course</span>
+          <div class="nd-course-row">
+            <button class="nd-course-btn">Starter</button>
+            <button class="nd-course-btn nd-course-btn-on">Main</button>
+            <button class="nd-course-btn">Dessert</button>
+            <button class="nd-course-btn">Side</button>
+            <button class="nd-course-btn">Amuse</button>
+          </div>
+        </div>
+        <div class="nd-field">
+          <span class="nd-label">Tags</span>
+          <div class="nd-chip-row">
+            <button class="nd-chip nd-chip-on">signature</button>
+            <button class="nd-chip">veg</button>
+            <button class="nd-chip">vegan</button>
+            <button class="nd-chip">raw</button>
+            <button class="nd-chip nd-chip-on">caribbean</button>
+            <button class="nd-chip">chilled</button>
+            <button class="nd-chip">summer</button>
+            <button class="nd-chip">tropical</button>
+          </div>
+        </div>
+        <div class="nd-field">
+          <span class="nd-label">Allergens</span>
+          <div class="nd-chip-row">
+            <button class="nd-chip nd-chip-al-on">fish</button>
+            <button class="nd-chip">shellfish</button>
+            <button class="nd-chip">dairy</button>
+            <button class="nd-chip">gluten</button>
+            <button class="nd-chip">egg</button>
+            <button class="nd-chip">nuts</button>
+            <button class="nd-chip">sesame</button>
+            <button class="nd-chip">soy</button>
+          </div>
+        </div>
+        <div class="nd-actions">
+          <button class="nd-cancel">Cancel</button>
+          <button class="nd-save">Save &amp; add to menu</button>
+        </div>
+      </div>
+
+      <input class="lib-filter" placeholder="Filter by name or tag…" value="">
+      <div class="lib-tabs">
+        <button class="lib-tab lib-tab-active">All</button>
+        <button class="lib-tab">Starter</button>
+        <button class="lib-tab">Main</button>
+        <button class="lib-tab">Dessert</button>
+        <button class="lib-tab">Side</button>
+      </div>
+
+      <h3 class="lib-course-title">Starter</h3>
+      <ul class="lib-dishes">
+        <li class="lib-dish">
+          <div class="lib-dish-head"><span class="lib-dish-name">Tuna tataki, yuzu ponzu</span><span class="lib-dish-stat">×12</span></div>
+          <p class="lib-dish-desc">Seared yellowfin, sesame crust, pickled ginger</p>
+          <div class="lib-dish-foot"><span class="lib-tag">signature</span><span class="lib-tag">raw</span><span class="lib-allergen">fish · sesame · soy</span></div>
+        </li>
+        <li class="lib-dish">
+          <div class="lib-dish-head"><span class="lib-dish-name">Gaspacho de mangue</span><span class="lib-dish-stat">×8</span></div>
+          <p class="lib-dish-desc">Chilled mango &amp; passionfruit, lime oil, crab</p>
+          <div class="lib-dish-foot"><span class="lib-tag">chilled</span><span class="lib-tag">summer</span><span class="lib-allergen">crustaceans</span></div>
+        </li>
+        <li class="lib-dish">
+          <div class="lib-dish-head"><span class="lib-dish-name">Burrata &amp; heirloom tomato</span><span class="lib-dish-stat">×15</span></div>
+          <p class="lib-dish-desc">Vine tomatoes, basil oil, aged balsamic</p>
+          <div class="lib-dish-foot"><span class="lib-tag">signature</span><span class="lib-tag">veg</span><span class="lib-allergen">dairy</span></div>
+        </li>
+      </ul>
+
+      <h3 class="lib-course-title">Main</h3>
+      <ul class="lib-dishes">
+        <li class="lib-dish">
+          <div class="lib-dish-head"><span class="lib-dish-name">Snapper, coconut curry</span><span class="lib-dish-stat">×9</span></div>
+          <p class="lib-dish-desc">Grilled fillet, lemongrass, saffron rice</p>
+          <div class="lib-dish-foot"><span class="lib-tag">caribbean</span><span class="lib-allergen">fish</span></div>
+        </li>
+        <li class="lib-dish">
+          <div class="lib-dish-head"><span class="lib-dish-name">Filet mignon, café de Paris</span><span class="lib-dish-stat">×14</span></div>
+          <p class="lib-dish-desc">Grass-fed, herb butter, dauphinoise</p>
+          <div class="lib-dish-foot"><span class="lib-tag">signature</span><span class="lib-allergen">dairy</span></div>
+        </li>
+        <li class="lib-dish">
+          <div class="lib-dish-head"><span class="lib-dish-name">Risotto aux cèpes</span><span class="lib-dish-stat">×6</span></div>
+          <p class="lib-dish-desc">Carnaroli, porcini, aged parmesan</p>
+          <div class="lib-dish-foot"><span class="lib-tag">veg</span><span class="lib-allergen">dairy</span></div>
+        </li>
+      </ul>
+
+      <h3 class="lib-course-title">Dessert</h3>
+      <ul class="lib-dishes">
+        <li class="lib-dish">
+          <div class="lib-dish-head"><span class="lib-dish-name">Passionfruit tart</span><span class="lib-dish-stat">×11</span></div>
+          <p class="lib-dish-desc">Sablé breton, torched meringue</p>
+          <div class="lib-dish-foot"><span class="lib-tag">tropical</span><span class="lib-allergen">gluten · dairy · egg</span></div>
+        </li>
+      </ul>
+    </div>
+  </aside>
+
+  <!-- Builder -->
+  <section class="builder">
+    <!-- Saturday -->
+    <div class="builder-card builder-card-focused">
+      <div class="builder-head">
+        <div>
+          <p class="builder-day">Saturday · 18 July</p>
+          <h2 class="builder-title">Menu Marigot</h2>
+          <p class="builder-sub">A tasting of the island — served at 18:30</p>
+        </div>
+        <span class="builder-count">6 dishes</span>
+      </div>
+      <div class="builder-courses">
+        <div>
+          <div class="bc-head"><h4 class="bc-title">Starter</h4><span class="bc-count">2 · min 1</span></div>
+          <ul class="bc-dishes">
+            <li class="bc-dish">
+              <div class="bc-grip">≡</div>
+              <div class="bc-body">
+                <span class="bc-name">Tuna tataki, yuzu ponzu</span>
+                <span class="bc-desc">Seared yellowfin, sesame crust, pickled ginger</span>
+                <span class="bc-allergens">fish · sesame · soy</span>
+              </div>
+              <div class="bc-actions"><button class="bc-btn" disabled>↑</button><button class="bc-btn">↓</button><button class="bc-btn-danger">×</button></div>
+            </li>
+            <li class="bc-dish">
+              <div class="bc-grip">≡</div>
+              <div class="bc-body">
+                <span class="bc-name">Burrata &amp; heirloom tomato</span>
+                <span class="bc-desc">Vine tomatoes, basil oil, aged balsamic</span>
+                <span class="bc-allergens">dairy</span>
+              </div>
+              <div class="bc-actions"><button class="bc-btn">↑</button><button class="bc-btn" disabled>↓</button><button class="bc-btn-danger">×</button></div>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <div class="bc-head"><h4 class="bc-title">Main</h4><span class="bc-count">2 · min 1</span></div>
+          <ul class="bc-dishes">
+            <li class="bc-dish">
+              <div class="bc-grip">≡</div>
+              <div class="bc-body">
+                <span class="bc-name">Snapper, coconut curry</span>
+                <span class="bc-desc">Grilled fillet, lemongrass, saffron rice</span>
+                <span class="bc-allergens">fish</span>
+              </div>
+              <div class="bc-actions"><button class="bc-btn" disabled>↑</button><button class="bc-btn">↓</button><button class="bc-btn-danger">×</button></div>
+            </li>
+            <li class="bc-dish">
+              <div class="bc-grip">≡</div>
+              <div class="bc-body">
+                <span class="bc-name">Filet mignon, café de Paris</span>
+                <span class="bc-desc">Grass-fed, herb butter, dauphinoise</span>
+                <span class="bc-allergens">dairy</span>
+              </div>
+              <div class="bc-actions"><button class="bc-btn">↑</button><button class="bc-btn" disabled>↓</button><button class="bc-btn-danger">×</button></div>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <div class="bc-head"><h4 class="bc-title">Dessert</h4><span class="bc-count">2 · min 1</span></div>
+          <ul class="bc-dishes">
+            <li class="bc-dish">
+              <div class="bc-grip">≡</div>
+              <div class="bc-body">
+                <span class="bc-name">Passionfruit tart</span>
+                <span class="bc-desc">Sablé breton, torched meringue</span>
+                <span class="bc-allergens">gluten · dairy · egg</span>
+              </div>
+              <div class="bc-actions"><button class="bc-btn" disabled>↑</button><button class="bc-btn">↓</button><button class="bc-btn-danger">×</button></div>
+            </li>
+            <li class="bc-dish">
+              <div class="bc-grip">≡</div>
+              <div class="bc-body">
+                <span class="bc-name">Coconut panna cotta</span>
+                <span class="bc-desc">Rum-soaked pineapple, lime zest</span>
+                <span class="bc-allergens">dairy</span>
+              </div>
+              <div class="bc-actions"><button class="bc-btn">↑</button><button class="bc-btn" disabled>↓</button><button class="bc-btn-danger">×</button></div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sunday -->
+    <div class="builder-card">
+      <div class="builder-head">
+        <div>
+          <p class="builder-day">Sunday · 19 July</p>
+          <h2 class="builder-title">Coucher de soleil</h2>
+          <p class="builder-sub">Sunset tasting · 18:00 pours from 17:30</p>
+        </div>
+        <span class="builder-count">5 dishes</span>
+      </div>
+      <div class="builder-courses">
+        <div>
+          <div class="bc-head"><h4 class="bc-title">Starter</h4><span class="bc-count">1 · min 1</span></div>
+          <ul class="bc-dishes">
+            <li class="bc-dish">
+              <div class="bc-grip">≡</div>
+              <div class="bc-body">
+                <span class="bc-name">Gaspacho de mangue</span>
+                <span class="bc-desc">Chilled mango &amp; passionfruit, lime oil, crab</span>
+                <span class="bc-allergens">crustaceans</span>
+              </div>
+              <div class="bc-actions"><button class="bc-btn" disabled>↑</button><button class="bc-btn" disabled>↓</button><button class="bc-btn-danger">×</button></div>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <div class="bc-head"><h4 class="bc-title">Main</h4><span class="bc-count">2 · min 1</span></div>
+          <ul class="bc-dishes">
+            <li class="bc-dish">
+              <div class="bc-grip">≡</div>
+              <div class="bc-body">
+                <span class="bc-name">Lamb rack, herbes de Provence</span>
+                <span class="bc-desc">Roasted with garlic confit, ratatouille</span>
+                <span class="bc-allergens">—</span>
+              </div>
+              <div class="bc-actions"><button class="bc-btn" disabled>↑</button><button class="bc-btn">↓</button><button class="bc-btn-danger">×</button></div>
+            </li>
+            <li class="bc-dish">
+              <div class="bc-grip">≡</div>
+              <div class="bc-body">
+                <span class="bc-name">Risotto aux cèpes</span>
+                <span class="bc-desc">Carnaroli, porcini, aged parmesan</span>
+                <span class="bc-allergens">dairy</span>
+              </div>
+              <div class="bc-actions"><button class="bc-btn">↑</button><button class="bc-btn" disabled>↓</button><button class="bc-btn-danger">×</button></div>
+            </li>
+          </ul>
+        </div>
+        <div>
+          <div class="bc-head"><h4 class="bc-title">Dessert</h4><span class="bc-count">2 · min 1</span></div>
+          <ul class="bc-dishes">
+            <li class="bc-dish">
+              <div class="bc-grip">≡</div>
+              <div class="bc-body">
+                <span class="bc-name">Dark chocolate fondant</span>
+                <span class="bc-desc">Molten centre, vanilla-bean ice cream</span>
+                <span class="bc-allergens">gluten · dairy · egg</span>
+              </div>
+              <div class="bc-actions"><button class="bc-btn" disabled>↑</button><button class="bc-btn">↓</button><button class="bc-btn-danger">×</button></div>
+            </li>
+            <li class="bc-dish">
+              <div class="bc-grip">≡</div>
+              <div class="bc-body">
+                <span class="bc-name">Fruits de saison</span>
+                <span class="bc-desc">Mango, papaya, sea grape, mint syrup</span>
+                <span class="bc-allergens">—</span>
+              </div>
+              <div class="bc-actions"><button class="bc-btn">↑</button><button class="bc-btn" disabled>↓</button><button class="bc-btn-danger">×</button></div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Preview -->
+  <aside class="preview-col">
+    <p class="preview-label">Guest preview · Saturday</p>
+    <div class="preview-phone">
+      <div class="preview-frame">
+        <p class="pf-eyebrow">Pirate at Night · Tonight</p>
+        <h2 class="pf-title">Menu Marigot</h2>
+        <p class="pf-sub">A tasting of the island — served at 18:30</p>
+        <p class="pf-meta">Saturday, 18 July · 18:00</p>
+
+        <section class="pf-course">
+          <h3 class="pf-course-title">To begin</h3>
+          <div class="pf-choices">
+            <div class="pf-choice-on">
+              <span class="pf-choice-name">Tuna tataki, yuzu ponzu</span>
+              <span class="pf-choice-desc">Seared yellowfin, sesame crust, pickled ginger</span>
+              <span class="pf-choice-allergens">fish · sesame · soy</span>
+            </div>
+            <div class="pf-choice">
+              <span class="pf-choice-name">Burrata &amp; heirloom tomato</span>
+              <span class="pf-choice-desc">Vine tomatoes, basil oil, aged balsamic</span>
+              <span class="pf-choice-allergens">dairy</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="pf-course">
+          <h3 class="pf-course-title">Main course</h3>
+          <div class="pf-choices">
+            <div class="pf-choice-on">
+              <span class="pf-choice-name">Snapper, coconut curry</span>
+              <span class="pf-choice-desc">Grilled fillet, lemongrass, saffron rice</span>
+              <span class="pf-choice-allergens">fish</span>
+            </div>
+            <div class="pf-choice">
+              <span class="pf-choice-name">Filet mignon, café de Paris</span>
+              <span class="pf-choice-desc">Grass-fed, herb butter, dauphinoise</span>
+              <span class="pf-choice-allergens">dairy</span>
+            </div>
+          </div>
+        </section>
+
+        <section class="pf-course">
+          <h3 class="pf-course-title">To finish</h3>
+          <div class="pf-choices">
+            <div class="pf-choice-on">
+              <span class="pf-choice-name">Passionfruit tart</span>
+              <span class="pf-choice-desc">Sablé breton, torched meringue</span>
+              <span class="pf-choice-allergens">gluten · dairy · egg</span>
+            </div>
+            <div class="pf-choice">
+              <span class="pf-choice-name">Coconut panna cotta</span>
+              <span class="pf-choice-desc">Rum-soaked pineapple, lime zest</span>
+              <span class="pf-choice-allergens">dairy</span>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </aside>
+
+</div>
+</body>
+</html>

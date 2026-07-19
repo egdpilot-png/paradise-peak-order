@@ -1,0 +1,42 @@
+:root {
+  --paper: #f5f1ea;
+  --ink: #1c1a17;
+  --ink-soft: #4a463f;
+  --brass: #b8873f;
+  --rule: #cbbfa9;
+  --allergen-bg: #fdf5f9;
+  --allergen-fg: #7c1e5a;
+  --allergen-border: #c56aa0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+}

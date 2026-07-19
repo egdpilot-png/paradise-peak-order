@@ -1,0 +1,750 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dashboard · Tonight · Pirate at Night × Paradise Peak</title>
+<style>
+  :root {
+    --paper: #F5F1EA;
+    --paper-alt: #EDE7DC;
+    --ink: #1C1A17;
+    --ink-soft: #4A463F;
+    --ink-faint: #8B867B;
+    --rule: #CBBFA9;
+    --accent: #B8873F;
+    --accent-soft: #E5B96B;
+    --success: #6DAA45;
+    --warn-bg: #FBF1DC;
+    --warn-fg: #8C6425;
+    --warn-border: #E9D294;
+    --crit-bg: #FBEEF3;
+    --crit-fg: #7C1E5A;
+    --crit-border: #E7A4C6;
+    --good-bg: #E8F0E4;
+    --good-fg: #2F5A18;
+    --good-border: #C6DDBB;
+    --banner-bg: #FBF6EA;
+    --banner-border: #E5D5AE;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* Header rail */
+  .headerRail {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 22px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .headerLeft { flex: 1 1 320px; }
+  .headerRight { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .eyebrow {
+    font-size: 10.5px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 6px;
+    font-weight: 600;
+  }
+  .headerTitle {
+    font-family: Georgia, serif;
+    font-size: 28px;
+    font-weight: 400;
+    margin: 0 0 4px;
+  }
+  .headerSubtitle {
+    font-size: 13px;
+    color: #C9C3B6;
+    margin: 0;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 11px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    border: 1px solid transparent;
+  }
+  .toneGood { background: var(--good-bg); color: var(--good-fg); border-color: var(--good-border); }
+  .toneWarn { background: var(--warn-bg); color: var(--warn-fg); border-color: var(--warn-border); }
+  .toneCrit { background: var(--crit-bg); color: var(--crit-fg); border-color: var(--crit-border); }
+  .liveDot {
+    width: 8px;
+    height: 8px;
+    background: var(--success);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+    display: inline-block;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(109, 170, 69, 0.6); }
+    50% { opacity: 0.6; box-shadow: 0 0 0 6px rgba(109, 170, 69, 0); }
+  }
+  .liveText { font-size: 11px; color: #C9C3B6; letter-spacing: 0.5px; }
+
+  /* Main */
+  main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 32px 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  /* KPIs */
+  .kpiGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  .kpiTile {
+    background: #FFFFFF;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 22px 24px;
+  }
+  .kpiTile.warn { background: var(--warn-bg); border-color: var(--warn-border); }
+  .kpiTile.muted { background: var(--paper-alt); border-color: var(--rule); }
+  .kpiLabel {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 12px;
+    font-weight: 600;
+  }
+  .kpiValue {
+    font-family: Georgia, serif;
+    font-size: 46px;
+    font-weight: 400;
+    line-height: 1;
+    margin: 0 0 8px;
+    font-variant-numeric: tabular-nums;
+  }
+  .kpiTile.warn .kpiValue { color: var(--warn-fg); }
+  .kpiSub {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin: 0;
+  }
+
+  /* Two col */
+  .twoCol { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 900px) { .twoCol { grid-template-columns: 1fr; } }
+
+  /* Panels */
+  .panel {
+    background: #FFFFFF;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 22px 24px;
+  }
+  .panelHead {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .panelTitle {
+    font-family: Georgia, serif;
+    font-size: 20px;
+    font-weight: 400;
+    margin: 0;
+  }
+  .panelMeta {
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  /* Tally */
+  .tallyGrid { display: flex; flex-direction: column; gap: 20px; }
+  .tallyCourseTitle {
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-size: 15px;
+    color: var(--accent);
+    margin: 0 0 10px;
+    font-weight: 400;
+  }
+  .tallyList { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+  .tallyRowText {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+  }
+  .tallyName { font-family: Georgia, serif; font-size: 14.5px; }
+  .tallyCount { font-size: 13px; font-weight: 600; color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .tallyBar { height: 5px; background: var(--paper-alt); border-radius: 3px; overflow: hidden; }
+  .tallyBarFill { height: 100%; background: var(--accent); border-radius: 3px; }
+
+  /* Allergy */
+  .allergyList { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+  .allergyRow {
+    padding: 12px 14px;
+    border: 1px solid #E4DBC8;
+    border-radius: 6px;
+    background: #FBF9F4;
+  }
+  .allergyRow.conflict { background: var(--crit-bg); border-color: var(--crit-border); }
+  .allergyFlag {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .allergyRow.conflict .allergyFlag { color: var(--crit-fg); }
+  .allergyGuests { display: flex; flex-direction: column; gap: 6px; }
+  .allergyGuest {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+  }
+  .allergyRoom {
+    display: inline-block;
+    min-width: 60px;
+    font-family: Georgia, serif;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .allergyName { color: var(--ink-soft); }
+  .allergyNote { font-style: italic; color: var(--ink-faint); font-size: 12px; }
+
+  /* Rooms */
+  .roomGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+  }
+  .roomCard {
+    background: #FFFFFF;
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .roomHead {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .roomLabel {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 2px;
+    font-weight: 600;
+  }
+  .roomNumber {
+    font-family: Georgia, serif;
+    font-size: 26px;
+    font-weight: 400;
+    line-height: 1;
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+  .roomGuest { font-size: 13.5px; margin: 0; }
+  .roomMeta { color: var(--ink-faint); font-size: 12px; }
+  .roomFlags {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .roomFlag {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #6E5A2C;
+    background: var(--banner-bg);
+    border: 1px solid var(--banner-border);
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 600;
+  }
+  .roomCourses {
+    list-style: none;
+    padding: 10px 0 0;
+    margin: 4px 0 0;
+    border-top: 1px solid #E4DBC8;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .roomCourse {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 10px;
+    align-items: baseline;
+  }
+  .roomCourseType {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    font-weight: 600;
+  }
+  .roomCourseDish { font-family: Georgia, serif; font-size: 14px; }
+  .roomNote {
+    font-family: Georgia, serif;
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin: 4px 0 0;
+    padding-top: 10px;
+    border-top: 1px solid #E4DBC8;
+    font-style: italic;
+  }
+  .roomNoteMuted {
+    font-size: 13px;
+    color: var(--ink-faint);
+    font-style: italic;
+    margin: 4px 0 0;
+    padding-top: 10px;
+    border-top: 1px solid #E4DBC8;
+  }
+  .roomNoteQuote {
+    font-size: 12.5px;
+    color: #6E5A2C;
+    background: var(--banner-bg);
+    padding: 8px 10px;
+    margin: 0;
+    font-style: italic;
+    border-radius: 4px;
+    border-left: 3px solid var(--accent);
+  }
+  .roomRef {
+    font-size: 10.5px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 4px 0 0;
+    font-family: 'SF Mono', Consolas, monospace;
+  }
+
+  /* Action rail */
+  .actionRail {
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 8px;
+    padding: 22px 24px;
+  }
+  .actionTitle {
+    font-family: Georgia, serif;
+    font-size: 18px;
+    font-weight: 400;
+    margin: 0 0 16px;
+  }
+  .actionGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+  }
+  .actionBtn {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 14px 16px;
+    background: #2A2725;
+    color: var(--paper);
+    border: 1px solid #454340;
+    border-radius: 6px;
+    text-align: left;
+    text-decoration: none;
+    transition: background 0.15s, border-color 0.15s;
+    cursor: pointer;
+    font: inherit;
+  }
+  .actionBtn:hover { background: #35322F; border-color: var(--accent); }
+  .actionLabel { font-size: 13.5px; font-weight: 600; letter-spacing: 0.3px; }
+  .actionSub { font-size: 11.5px; color: #A8A29A; line-height: 1.4; }
+
+  footer {
+    padding-top: 24px;
+    border-top: 1px solid var(--rule);
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    letter-spacing: 0.5px;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<!-- ================================ HEADER ================================ -->
+<header class="headerRail">
+  <div class="headerLeft">
+    <p class="eyebrow">Pirate at Night · The Paradise Peak</p>
+    <h1 class="headerTitle">Tuesday, 21 July 2026</h1>
+    <p class="headerSubtitle">Plated · Menu Grand Case</p>
+  </div>
+  <div class="headerRight">
+    <span class="chip toneWarn">Late window · kitchen prepping</span>
+    <span class="liveDot"></span>
+    <span class="liveText">Live · updated 12s ago</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- =========================== KPI TILES =========================== -->
+  <section class="kpiGrid">
+    <article class="kpiTile">
+      <p class="kpiLabel">Covers tonight</p>
+      <p class="kpiValue">14</p>
+      <p class="kpiSub">of 17 guests in house</p>
+    </article>
+    <article class="kpiTile">
+      <p class="kpiLabel">Orders in</p>
+      <p class="kpiValue">6</p>
+      <p class="kpiSub">7 rooms occupied</p>
+    </article>
+    <article class="kpiTile warn">
+      <p class="kpiLabel">Awaiting order</p>
+      <p class="kpiValue">1</p>
+      <p class="kpiSub">Follow up before 14:00</p>
+    </article>
+    <article class="kpiTile muted">
+      <p class="kpiLabel">Chef's choice</p>
+      <p class="kpiValue">0</p>
+      <p class="kpiSub">Rooms defaulted after hard lock</p>
+    </article>
+  </section>
+
+  <!-- =========================== TWO COL =========================== -->
+  <div class="twoCol">
+
+    <!-- COURSE TALLY -->
+    <section class="panel">
+      <div class="panelHead">
+        <h2 class="panelTitle">Course tally</h2>
+        <span class="panelMeta">18 selections</span>
+      </div>
+      <div class="tallyGrid">
+
+        <div>
+          <h3 class="tallyCourseTitle">Starter</h3>
+          <ul class="tallyList">
+            <li>
+              <div class="tallyRowText"><span class="tallyName">Tuna tataki</span><span class="tallyCount">×4</span></div>
+              <div class="tallyBar"><div class="tallyBarFill" style="width:100%"></div></div>
+            </li>
+            <li>
+              <div class="tallyRowText"><span class="tallyName">Chilled melon gazpacho</span><span class="tallyCount">×2</span></div>
+              <div class="tallyBar"><div class="tallyBarFill" style="width:50%"></div></div>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="tallyCourseTitle">Main</h3>
+          <ul class="tallyList">
+            <li>
+              <div class="tallyRowText"><span class="tallyName">Filet mignon</span><span class="tallyCount">×3</span></div>
+              <div class="tallyBar"><div class="tallyBarFill" style="width:100%"></div></div>
+            </li>
+            <li>
+              <div class="tallyRowText"><span class="tallyName">Sous-vide mahi</span><span class="tallyCount">×2</span></div>
+              <div class="tallyBar"><div class="tallyBarFill" style="width:67%"></div></div>
+            </li>
+            <li>
+              <div class="tallyRowText"><span class="tallyName">Pleurotes du panicaut</span><span class="tallyCount">×1</span></div>
+              <div class="tallyBar"><div class="tallyBarFill" style="width:33%"></div></div>
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 class="tallyCourseTitle">Dessert</h3>
+          <ul class="tallyList">
+            <li>
+              <div class="tallyRowText"><span class="tallyName">Coconut panna cotta</span><span class="tallyCount">×4</span></div>
+              <div class="tallyBar"><div class="tallyBarFill" style="width:100%"></div></div>
+            </li>
+            <li>
+              <div class="tallyRowText"><span class="tallyName">Fresh fruit plate</span><span class="tallyCount">×2</span></div>
+              <div class="tallyBar"><div class="tallyBarFill" style="width:50%"></div></div>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ALLERGY MATRIX -->
+    <section class="panel">
+      <div class="panelHead">
+        <h2 class="panelTitle">Allergy matrix</h2>
+        <span class="chip toneCrit">Conflict flagged</span>
+      </div>
+      <ul class="allergyList">
+
+        <li class="allergyRow conflict">
+          <div class="allergyFlag">Shellfish allergy</div>
+          <div class="allergyGuests">
+            <div class="allergyGuest">
+              <span class="allergyRoom">Room 7</span>
+              <span class="allergyName">Fournier · <em class="allergyNote">severe — no cross-contact</em></span>
+              <span class="chip toneCrit">Conflict: Tuna tataki</span>
+            </div>
+          </div>
+        </li>
+
+        <li class="allergyRow">
+          <div class="allergyFlag">Gluten-free</div>
+          <div class="allergyGuests">
+            <div class="allergyGuest">
+              <span class="allergyRoom">Room 4</span>
+              <span class="allergyName">Marchetti · <em class="allergyNote">child (age 6), no spice</em></span>
+            </div>
+            <div class="allergyGuest">
+              <span class="allergyRoom">Room 12</span>
+              <span class="allergyName">Bergström</span>
+            </div>
+          </div>
+        </li>
+
+        <li class="allergyRow">
+          <div class="allergyFlag">Dairy-free</div>
+          <div class="allergyGuests">
+            <div class="allergyGuest">
+              <span class="allergyRoom">Room 9</span>
+              <span class="allergyName">O'Sullivan</span>
+            </div>
+          </div>
+        </li>
+
+        <li class="allergyRow">
+          <div class="allergyFlag">Vegetarian</div>
+          <div class="allergyGuests">
+            <div class="allergyGuest">
+              <span class="allergyRoom">Room 2</span>
+              <span class="allergyName">Amaro · <em class="allergyNote">no fish either</em></span>
+            </div>
+          </div>
+        </li>
+
+        <li class="allergyRow">
+          <div class="allergyFlag">Free-text note</div>
+          <div class="allergyGuests">
+            <div class="allergyGuest">
+              <span class="allergyRoom">Room 4</span>
+              <span class="allergyName">Marchetti · <em class="allergyNote">child eats meat medium, no cilantro</em></span>
+            </div>
+          </div>
+        </li>
+
+      </ul>
+    </section>
+
+  </div>
+
+  <!-- =========================== ROOMS =========================== -->
+  <section class="panel">
+    <div class="panelHead">
+      <h2 class="panelTitle">Rooms tonight</h2>
+      <span class="panelMeta">7 occupied</span>
+    </div>
+    <div class="roomGrid">
+
+      <!-- Room 2 -->
+      <article class="roomCard">
+        <header class="roomHead">
+          <div>
+            <p class="roomLabel">Room</p>
+            <p class="roomNumber">2</p>
+          </div>
+          <span class="chip toneGood">Ordered</span>
+        </header>
+        <p class="roomGuest">Amaro · <span class="roomMeta">party of 2 · EN</span></p>
+        <ul class="roomFlags">
+          <li class="roomFlag">vegetarian</li>
+        </ul>
+        <ul class="roomCourses">
+          <li class="roomCourse"><span class="roomCourseType">Starter</span><span class="roomCourseDish">Chilled melon gazpacho</span></li>
+          <li class="roomCourse"><span class="roomCourseType">Main</span><span class="roomCourseDish">Pleurotes du panicaut</span></li>
+          <li class="roomCourse"><span class="roomCourseType">Dessert</span><span class="roomCourseDish">Fresh fruit plate</span></li>
+        </ul>
+        <p class="roomRef">PP-2026-0721-02</p>
+      </article>
+
+      <!-- Room 4 -->
+      <article class="roomCard">
+        <header class="roomHead">
+          <div>
+            <p class="roomLabel">Room</p>
+            <p class="roomNumber">4</p>
+          </div>
+          <span class="chip toneGood">Ordered</span>
+        </header>
+        <p class="roomGuest">Marchetti · <span class="roomMeta">party of 3 · EN</span></p>
+        <ul class="roomFlags">
+          <li class="roomFlag">gluten free</li>
+        </ul>
+        <ul class="roomCourses">
+          <li class="roomCourse"><span class="roomCourseType">Starter</span><span class="roomCourseDish">Tuna tataki</span></li>
+          <li class="roomCourse"><span class="roomCourseType">Main</span><span class="roomCourseDish">Filet mignon</span></li>
+          <li class="roomCourse"><span class="roomCourseType">Dessert</span><span class="roomCourseDish">Coconut panna cotta</span></li>
+        </ul>
+        <p class="roomNoteQuote">"No cilantro on the mahi, please. Child eats meat medium."</p>
+        <p class="roomRef">PP-2026-0721-04</p>
+      </article>
+
+      <!-- Room 7 CONFLICT -->
+      <article class="roomCard" style="border-color: var(--crit-border); box-shadow: 0 0 0 3px rgba(231, 164, 198, 0.25);">
+        <header class="roomHead">
+          <div>
+            <p class="roomLabel">Room</p>
+            <p class="roomNumber">7</p>
+          </div>
+          <span class="chip toneCrit">Ordered · Conflict</span>
+        </header>
+        <p class="roomGuest">Fournier · <span class="roomMeta">party of 2 · FR</span></p>
+        <ul class="roomFlags">
+          <li class="roomFlag" style="background: var(--crit-bg); border-color: var(--crit-border); color: var(--crit-fg);">shellfish allergy</li>
+        </ul>
+        <ul class="roomCourses">
+          <li class="roomCourse"><span class="roomCourseType">Starter</span><span class="roomCourseDish" style="color: var(--crit-fg); font-weight: 600;">Tuna tataki ⚠</span></li>
+          <li class="roomCourse"><span class="roomCourseType">Main</span><span class="roomCourseDish">Filet mignon</span></li>
+          <li class="roomCourse"><span class="roomCourseType">Dessert</span><span class="roomCourseDish">Coconut panna cotta</span></li>
+        </ul>
+        <p class="roomNoteQuote" style="background: var(--crit-bg); border-color: var(--crit-border); border-left-color: var(--crit-fg); color: var(--crit-fg);">Guest flagged shellfish — starter contains fish. Verify with kitchen.</p>
+        <p class="roomRef">PP-2026-0721-07</p>
+      </article>
+
+      <!-- Room 9 -->
+      <article class="roomCard">
+        <header class="roomHead">
+          <div>
+            <p class="roomLabel">Room</p>
+            <p class="roomNumber">9</p>
+          </div>
+          <span class="chip toneGood">Ordered</span>
+        </header>
+        <p class="roomGuest">O'Sullivan · <span class="roomMeta">party of 2 · EN</span></p>
+        <ul class="roomFlags">
+          <li class="roomFlag">dairy free</li>
+        </ul>
+        <ul class="roomCourses">
+          <li class="roomCourse"><span class="roomCourseType">Starter</span><span class="roomCourseDish">Chilled melon gazpacho</span></li>
+          <li class="roomCourse"><span class="roomCourseType">Main</span><span class="roomCourseDish">Sous-vide mahi</span></li>
+          <li class="roomCourse"><span class="roomCourseType">Dessert</span><span class="roomCourseDish">Fresh fruit plate</span></li>
+        </ul>
+        <p class="roomRef">PP-2026-0721-09</p>
+      </article>
+
+      <!-- Room 10 -->
+      <article class="roomCard">
+        <header class="roomHead">
+          <div>
+            <p class="roomLabel">Room</p>
+            <p class="roomNumber">10</p>
+          </div>
+          <span class="chip toneGood">Ordered</span>
+        </header>
+        <p class="roomGuest">Nakamura · <span class="roomMeta">party of 2 · EN</span></p>
+        <ul class="roomCourses">
+          <li class="roomCourse"><span class="roomCourseType">Starter</span><span class="roomCourseDish">Tuna tataki</span></li>
+          <li class="roomCourse"><span class="roomCourseType">Main</span><span class="roomCourseDish">Sous-vide mahi</span></li>
+          <li class="roomCourse"><span class="roomCourseType">Dessert</span><span class="roomCourseDish">Coconut panna cotta</span></li>
+        </ul>
+        <p class="roomNoteQuote">"Anniversary tonight — a quiet corner table if possible."</p>
+        <p class="roomRef">PP-2026-0721-10</p>
+      </article>
+
+      <!-- Room 12 -->
+      <article class="roomCard">
+        <header class="roomHead">
+          <div>
+            <p class="roomLabel">Room</p>
+            <p class="roomNumber">12</p>
+          </div>
+          <span class="chip toneGood">Ordered</span>
+        </header>
+        <p class="roomGuest">Bergström · <span class="roomMeta">party of 2 · EN</span></p>
+        <ul class="roomFlags">
+          <li class="roomFlag">gluten free</li>
+        </ul>
+        <ul class="roomCourses">
+          <li class="roomCourse"><span class="roomCourseType">Starter</span><span class="roomCourseDish">Tuna tataki</span></li>
+          <li class="roomCourse"><span class="roomCourseType">Main</span><span class="roomCourseDish">Filet mignon</span></li>
+          <li class="roomCourse"><span class="roomCourseType">Dessert</span><span class="roomCourseDish">Coconut panna cotta</span></li>
+        </ul>
+        <p class="roomRef">PP-2026-0721-12</p>
+      </article>
+
+      <!-- Room 14 - AWAITING -->
+      <article class="roomCard" style="border-color: var(--warn-border); background: #FDFAF0;">
+        <header class="roomHead">
+          <div>
+            <p class="roomLabel">Room</p>
+            <p class="roomNumber">14</p>
+          </div>
+          <span class="chip toneWarn">Late window</span>
+        </header>
+        <p class="roomGuest">Petrov · <span class="roomMeta">party of 2 · EN</span></p>
+        <p class="roomNoteMuted">Awaiting order — kitchen team can escalate via WhatsApp.</p>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- =========================== ACTIONS =========================== -->
+  <section class="actionRail">
+    <h2 class="actionTitle">Kitchen actions</h2>
+    <div class="actionGrid">
+      <button class="actionBtn">
+        <span class="actionLabel">Send WhatsApp digest</span>
+        <span class="actionSub">Push tonight's covers &amp; allergies to kitchen line</span>
+      </button>
+      <button class="actionBtn">
+        <span class="actionLabel">Assign chef's choice (1)</span>
+        <span class="actionSub">Auto-order for Room 14 if past hard lock</span>
+      </button>
+      <button class="actionBtn">
+        <span class="actionLabel">Lock orders now</span>
+        <span class="actionSub">Freezes menu — no further guest edits</span>
+      </button>
+      <a class="actionBtn" href="#">
+        <span class="actionLabel">Print The Book (PDF)</span>
+        <span class="actionSub">Backup service sheet · one page per room</span>
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    Pirate at Night × The Paradise Peak · Signed in as Eugene Duzant (kitchen ops)
+  </footer>
+
+</main>
+
+</body>
+</html>
