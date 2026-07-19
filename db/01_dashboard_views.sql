@@ -58,11 +58,11 @@ select
   o.updated_at    as last_updated,
   coalesce(c.courses, '[]'::jsonb) as courses,
   case
-    when o.status = 'chefs_choice' then 'chefs_choice'
-    when o.status in ('locked', 'delivered') then 'submitted'
+    when o.entry_channel = 'chef_choice' then 'chefs_choice'
+    when o.status in ('locked', 'served') then 'submitted'
     when o.status = 'submitted' and coalesce(jsonb_array_length(c.courses), 0) = 0 then 'buffet_confirmed'
     when o.status = 'submitted' then 'submitted'
-    when o.status = 'pending' then 'pending'
+    when o.status = 'draft' then 'pending'
     when now() > (r.service_date::timestamp + interval '14 hours' + interval '4 hours') then 'no_order' -- past 14:00 local
     when now() > (r.service_date::timestamp + interval '10 hours' + interval '4 hours') then 'late_window'
     else 'no_order'
@@ -88,7 +88,7 @@ select
   count(*)::int                     as count,
   sum(o.cover_count)::int           as covers
 from order_items oi
-join orders o     on o.id = oi.order_id and o.status in ('submitted', 'locked', 'delivered')
+join orders o     on o.id = oi.order_id and o.status in ('submitted', 'locked', 'served')
 join menu_items mi on mi.id = oi.menu_item_id
 group by o.service_date, mi.course, mi.id, mi.name, mi.name_fr;
 
@@ -131,7 +131,7 @@ conflicts as (
   join orders o
     on o.service_date = f.service_date
     and o.room_number = f.room_number
-    and o.status in ('submitted', 'locked', 'delivered')
+    and o.status in ('submitted', 'locked', 'served')
   join order_items oi on oi.order_id = o.id
   join menu_items mi on mi.id = oi.menu_item_id
   where mi.allergens ? (
@@ -173,9 +173,9 @@ drop view if exists v_covers_by_date cascade;
 create view v_covers_by_date as
 select
   o.service_date,
-  sum(o.cover_count) filter (where o.status in ('submitted', 'locked', 'delivered'))::int as covers,
-  count(*) filter (where o.status in ('submitted', 'locked', 'delivered'))::int as orders_submitted,
-  count(*) filter (where o.status = 'chefs_choice')::int as orders_chefs_choice
+  sum(o.cover_count) filter (where o.status in ('submitted', 'locked', 'served'))::int as covers,
+  count(*) filter (where o.status in ('submitted', 'locked', 'served'))::int as orders_submitted,
+  count(*) filter (where o.entry_channel = 'chef_choice')::int as orders_chefs_choice
 from orders o
 group by o.service_date;
 
