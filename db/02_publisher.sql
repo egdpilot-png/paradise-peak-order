@@ -15,7 +15,7 @@ create table if not exists dish_library (
   description_fr text,
   course         course_type not null,
   tags           text[] default '{}',      -- e.g. {'caribbean','signature','summer'}
-  allergens      jsonb  default '[]'::jsonb, -- e.g. ["fish","soy"]
+  allergens      text[] default '{}',       -- e.g. {'fish','soy'} (matches menu_items.allergens)
   dietary_ok     dietary_flag[] default '{}',-- flags this dish is safe for
   cost_est_eur   numeric(6,2),              -- ingredient cost estimate
   price_eur      numeric(6,2),              -- menu price if à la carte
@@ -33,7 +33,7 @@ create index if not exists dish_library_tags_idx   on dish_library using gin(tag
 -- Backfill from any existing menu_items so the library isn't empty
 insert into dish_library (name, name_fr, description, description_fr, course, allergens)
 select distinct on (name, course)
-  name, name_fr, description, description_fr, course, coalesce(allergens, '[]'::jsonb)
+  name, name_fr, description, description_fr, course, coalesce(allergens, '{}')
 from menu_items
 on conflict do nothing;
 
