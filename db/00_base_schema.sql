@@ -81,8 +81,10 @@ create table guests (
 
 create index guests_room_idx     on guests (room_number);
 create index guests_stay_idx     on guests (check_in, check_out);
-create index guests_current_idx  on guests (check_in, check_out)
-  where check_out >= current_date;
+-- NOTE: dropped the partial-index predicate (check_out >= current_date)
+-- because current_date is not IMMUTABLE and Postgres rejects it in
+-- index predicates. The full index still serves range lookups fine.
+create index guests_current_idx  on guests (check_in, check_out);
 
 
 -- 3.2 Menus — one row per service date
