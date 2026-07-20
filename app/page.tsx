@@ -12,6 +12,16 @@ export default function HomePage() {
       }}
     >
       <div style={{ maxWidth: 480 }}>
+        <img
+          src="/logo.jpg"
+          alt="Pirate By Night"
+          style={{
+            width: 160,
+            height: 160,
+            objectFit: 'contain',
+            marginBottom: '1rem',
+          }}
+        />
         <h1
           style={{
             fontFamily: 'Georgia, serif',

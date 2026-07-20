@@ -80,17 +80,25 @@ export default async function LoginPage({
           boxShadow: '0 12px 32px rgba(40, 37, 29, 0.06)',
         }}
       >
+        <div style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
+          <img
+            src="/logo.jpg"
+            alt="Pirate By Night"
+            style={{ width: 96, height: 96, objectFit: 'contain' }}
+          />
+        </div>
         <h1
           style={{
             fontFamily: 'Georgia, "Times New Roman", serif',
             fontSize: '2rem',
             margin: '0 0 0.25rem',
             color: '#28251D',
+            textAlign: 'center',
           }}
         >
           Paradise Peak
         </h1>
-        <p style={{ margin: '0 0 1.5rem', color: '#7A6E56', fontSize: '0.95rem' }}>
+        <p style={{ margin: '0 0 1.5rem', color: '#7A6E56', fontSize: '0.95rem', textAlign: 'center' }}>
           Kitchen &amp; ops dashboard
         </p>
 

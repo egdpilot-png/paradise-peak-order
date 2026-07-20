@@ -102,6 +102,10 @@ export async function GET(req: Request) {
 
       return `
         <section class="page">
+          <div class="room-mark">
+            <img src="/logo.jpg" alt="" class="room-mark-img" />
+            <span>Pirate By Night · Paradise Peak</span>
+          </div>
           <header class="room-header">
             <div class="room-num">Room ${esc(r.room)}</div>
             <div class="status status-${esc(r.status)}">${esc(statusLabel(r.status))}</div>
@@ -126,6 +130,9 @@ export async function GET(req: Request) {
   // Optional summary page (cover)
   const coverHtml = `
     <section class="page cover">
+      <div class="cover-logo-wrap">
+        <img src="/logo.jpg" alt="Pirate By Night" class="cover-logo" />
+      </div>
       <div class="cover-brand">Paradise Peak</div>
       <div class="cover-subtitle">Kitchen · The Book</div>
       <div class="cover-date">${esc(dateLabel)}</div>
@@ -182,6 +189,16 @@ export async function GET(req: Request) {
   }
   .page:last-child { page-break-after: auto; }
 
+  .cover-logo-wrap {
+    text-align: center;
+    margin-bottom: 12pt;
+  }
+  .cover-logo {
+    width: 90pt;
+    height: 90pt;
+    object-fit: contain;
+  }
+  .cover { text-align: center; }
   .cover .cover-brand {
     font-size: 42pt;
     font-family: Georgia, serif;
@@ -203,7 +220,9 @@ export async function GET(req: Request) {
     grid-template-columns: repeat(4, 1fr);
     gap: 12pt;
     margin-bottom: 24pt;
+    text-align: left;
   }
+  .cover-section-label, .allergy-list { text-align: left; }
   .stat {
     background: #F5EFE4;
     border: 1px solid #E0D8C6;
@@ -250,6 +269,17 @@ export async function GET(req: Request) {
     font-size: 11pt;
   }
 
+  .room-mark {
+    display: flex;
+    align-items: center;
+    gap: 8pt;
+    font-size: 9pt;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #7A6E56;
+    margin-bottom: 12pt;
+  }
+  .room-mark-img { width: 22pt; height: 22pt; object-fit: contain; opacity: 0.9; }
   .room-header {
     display: flex;
     justify-content: space-between;
