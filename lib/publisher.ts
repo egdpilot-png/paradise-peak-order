@@ -127,7 +127,7 @@ export async function loadWeekendContext(saturday: string): Promise<WeekendConte
     loadDishLibrary(),
     loadMenuForDate(saturday),
     loadMenuForDate(sunday),
-    sb().from('guests')
+    sb.from('guests')
       .select('id, language')
       .lte('check_in', sunday)
       .gt('check_out', saturday),
@@ -157,7 +157,7 @@ export async function saveDraft(draft: MenuDraft, actor: string): Promise<string
   const sb = admin();
 
   // Delete any existing draft for this date
-  await sb().from('menus').delete().eq('service_date', draft.service_date).eq('status', 'draft');
+  await sb.from('menus').delete().eq('service_date', draft.service_date).eq('status', 'draft');
 
   const { data, error } = await sb
     .from('menus')
@@ -201,7 +201,7 @@ export async function saveDraft(draft: MenuDraft, actor: string): Promise<string
         sort_order: it.sort_order,
       };
     });
-    const { error: iErr } = await sb().from('menu_items').insert(rows);
+    const { error: iErr } = await sb.from('menu_items').insert(rows);
     if (iErr) throw iErr;
   }
 
@@ -213,7 +213,7 @@ export async function publishWeekend(
   actor: string,
 ): Promise<PublishResult[]> {
   const sb = admin();
-  const { data, error } = await sb().rpc('publish_weekend_menus', {
+  const { data, error } = await sb.rpc('publish_weekend_menus', {
     p_menus: drafts,
     p_actor: actor,
   });
