@@ -97,10 +97,10 @@ export async function loadTonightSummary(date: string): Promise<TonightSummary> 
   const sb = admin();
 
   const [menuRes, guestsRes, ordersRes, publishRes] = await Promise.all([
-    sb().from('menus').select('*, menu_items(*)').eq('service_date', date).maybeSingle(),
-    sb().rpc('guests_in_house', { d: date }),
-    sb().from('orders').select('id, room_number, status, cover_count').eq('service_date', date),
-    sb().from('menu_publish_log').select('*').eq('service_date', date).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+    sb.from('menus').select('*, menu_items(*)').eq('service_date', date).maybeSingle(),
+    sb.rpc('guests_in_house', { d: date }),
+    sb.from('orders').select('id, room_number, status, cover_count').eq('service_date', date),
+    sb.from('menu_publish_log').select('*').eq('service_date', date).order('created_at', { ascending: false }).limit(1).maybeSingle(),
   ]);
 
   const menu: Menu | null = menuRes.data ? {
@@ -209,7 +209,7 @@ export async function loadRoomRows(date: string): Promise<RoomRow[]> {
 
 export async function markChefsChoiceForMissing(date: string): Promise<number> {
   const sb = admin();
-  const { data: guests, error: gErr } = await sb().rpc('guests_in_house', { d: date });
+  const { data: guests, error: gErr } = await sb.rpc('guests_in_house', { d: date });
   if (gErr) throw gErr;
 
   const { data: existing, error: eErr } = await sb
@@ -233,14 +233,14 @@ export async function markChefsChoiceForMissing(date: string): Promise<number> {
     notes: 'Auto-assigned by kitchen after 14:00 hard lock',
   }));
 
-  const { error } = await sb().from('orders').insert(rows);
+  const { error } = await sb.from('orders').insert(rows);
   if (error) throw error;
   return rows.length;
 }
 
 export async function lockOrders(date: string): Promise<number> {
   const sb = admin();
-  const { data, error } = await sb().rpc('lock_orders_for_date', { d: date });
+  const { data, error } = await sb.rpc('lock_orders_for_date', { d: date });
   if (error) throw error;
   return (data as number) ?? 0;
 }
