@@ -20,7 +20,7 @@ export type IssueResult =
   | {
       ok: true;
       room: string;
-      guest_name: string | null;
+      guest_name: string;
       check_in: string;
       check_out: string;
       language: string;
@@ -40,7 +40,7 @@ export async function issueQrForRoom(formData: FormData): Promise<IssueResult> {
   }
 
   const room = String(formData.get('room') || '').trim();
-  const guestName = String(formData.get('guest_name') || '').trim() || null;
+  const guestName = String(formData.get('guest_name') || '').trim();
   const checkIn = String(formData.get('check_in') || '').trim();
   const checkOut = String(formData.get('check_out') || '').trim();
   const language = String(formData.get('language') || 'en').trim();
@@ -50,16 +50,35 @@ export async function issueQrForRoom(formData: FormData): Promise<IssueResult> {
     String(formData.get('allergy_notes') || '').trim() || null;
 
   if (!room) return { ok: false, error: 'Room number is required' };
+  if (!guestName) return { ok: false, error: 'Guest name is required' };
   if (!checkIn) return { ok: false, error: 'Check-in date is required' };
   if (!checkOut) return { ok: false, error: 'Check-out date is required' };
   if (checkOut <= checkIn)
     return { ok: false, error: 'Check-out must be after check-in' };
 
+  // Valid values for the dietary_flag Postgres enum.
+  const VALID_FLAGS = new Set([
+    'vegetarian', 'vegan', 'gluten_free', 'dairy_free',
+    'nut_allergy', 'shellfish_allergy', 'pescatarian',
+    'halal', 'kosher', 'no_pork', 'no_alcohol', 'other',
+  ]);
+  // Common user aliases mapped to the actual enum value.
+  const FLAG_ALIASES: Record<string, string> = {
+    nut_free: 'nut_allergy',
+    shellfish_free: 'shellfish_allergy',
+    gf: 'gluten_free',
+    df: 'dairy_free',
+  };
   const dietary_flags = flagsRaw
-    ? flagsRaw
-        .split(',')
-        .map((s) => s.trim().toLowerCase())
-        .filter(Boolean)
+    ? Array.from(
+        new Set(
+          flagsRaw
+            .split(',')
+            .map((s) => s.trim().toLowerCase().replace(/\s+/g, '_'))
+            .map((s) => FLAG_ALIASES[s] ?? s)
+            .filter((s) => VALID_FLAGS.has(s)),
+        ),
+      )
     : [];
 
   const sb = admin();

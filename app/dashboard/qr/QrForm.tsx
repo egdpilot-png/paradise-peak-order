@@ -135,9 +135,10 @@ export function QrForm({
             </Field>
           </Row2>
 
-          <Field label="Guest name">
+          <Field label="Guest name *">
             <input
               name="guest_name"
+              required
               placeholder="e.g. Marchetti family"
               style={inputStyle}
             />
@@ -185,9 +186,9 @@ export function QrForm({
               style={inputStyle}
             />
             <small style={{ color: '#7A6E56', fontSize: '0.75rem' }}>
-              Options: vegetarian, vegan, gluten_free, dairy_free, nut_free,
+              Options: vegetarian, vegan, gluten_free, dairy_free,
               nut_allergy, shellfish_allergy, pescatarian, halal, kosher,
-              no_pork, no_alcohol
+              no_pork, no_alcohol, other
             </small>
           </Field>
 
