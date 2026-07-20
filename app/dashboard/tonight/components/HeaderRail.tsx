@@ -47,6 +47,11 @@ export function HeaderRail({
           {serviceLabel(summary.serviceType)}
           {summary.menu ? ` · ${summary.menu.title}` : ''}
         </p>
+        <nav style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem', fontSize: '0.85rem' }}>
+          <a href="/dashboard/publish" style={{ color: '#8B3A2E', textDecoration: 'none' }}>Publish menu</a>
+          <span style={{ color: '#D4C8AF' }}>·</span>
+          <a href="/dashboard/qr" style={{ color: '#8B3A2E', textDecoration: 'none' }}>Issue guest QR</a>
+        </nav>
       </div>
       <div className={styles.headerRight}>
         <span className={`${styles.chip} ${WINDOW_TONE[summary.windowState]}`}>
