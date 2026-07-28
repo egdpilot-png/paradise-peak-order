@@ -61,6 +61,17 @@ export function HeaderRail({
         <span className={styles.liveText}>
           Live · {lastPing ? `updated ${timeAgo(lastPing)}` : 'awaiting first order'}
         </span>
+        <a
+          href="/dashboard/logout"
+          style={{
+            marginLeft: '0.75rem',
+            fontSize: '0.8rem',
+            color: '#8B3A2E',
+            textDecoration: 'none',
+          }}
+        >
+          Sign out
+        </a>
       </div>
     </header>
   );

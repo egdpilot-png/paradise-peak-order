@@ -1,60 +1,56 @@
-// PIN login for the dashboard (Wave 1 shared-PIN auth).
-// On correct PIN, sets a signed cookie and redirects to /dashboard/tonight.
+// Magic-link login for the dashboard (Supabase Auth).
+// Only emails present in `dashboard_users` are authorized — the DB trigger
+// `enforce_dashboard_allowlist` rejects sign-ups for anyone else.
 
 import { redirect } from 'next/navigation';
-import { cookies } from 'next/headers';
-import { createHmac, timingSafeEqual } from 'crypto';
-import 'server-only';
+import { headers } from 'next/headers';
+import { createSupabaseServerClient } from '@/lib/supabase-server';
 
 export const dynamic = 'force-dynamic';
 
-const COOKIE_NAME = 'pp_dash';
-
-function sign(value: string): string {
-  const secret = process.env.DASHBOARD_COOKIE_SECRET || '';
-  return createHmac('sha256', secret).update(value).digest('hex');
-}
-
-async function login(formData: FormData) {
+async function sendMagicLink(formData: FormData) {
   'use server';
-  const submittedPin = String(formData.get('pin') || '').trim();
-  const expectedPin = (process.env.DASHBOARD_PIN || '').trim();
 
-  if (!expectedPin || !submittedPin) {
-    redirect('/dashboard/login?error=1');
+  const email = String(formData.get('email') || '').trim().toLowerCase();
+  if (!email) {
+    redirect('/dashboard/login?error=send');
   }
 
-  // constant-time compare
-  const a = Buffer.from(submittedPin.padEnd(32, '\0'));
-  const b = Buffer.from(expectedPin.padEnd(32, '\0'));
-  const ok = a.length === b.length && timingSafeEqual(a, b);
+  const hdrs = await headers();
+  const host = hdrs.get('x-forwarded-host') ?? hdrs.get('host');
+  const proto = hdrs.get('x-forwarded-proto') ?? 'https';
+  const origin = `${proto}://${host}`;
 
-  if (!ok) {
-    redirect('/dashboard/login?error=1');
-  }
-
-  const token = `admin.${Date.now()}`;
-  const value = `${token}.${sign(token)}`;
-
-  const store = await cookies();
-  store.set(COOKIE_NAME, value, {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 60 * 60 * 24 * 30, // 30 days
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: `${origin}/auth/callback?next=/dashboard/tonight`,
+      shouldCreateUser: true,
+    },
   });
 
-  redirect('/dashboard/tonight');
+  if (error) {
+    const msg = error.message || '';
+    const code = (error as { code?: string }).code;
+    if (msg.includes('Access denied') || code === '42501') {
+      redirect('/dashboard/login?error=notauthorized');
+    }
+    redirect('/dashboard/login?error=send');
+  }
+
+  redirect('/dashboard/login?sent=1');
 }
 
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ sent?: string; error?: string }>;
 }) {
   const sp = await searchParams;
-  const showError = sp?.error === '1';
+  const sent = sp?.sent === '1';
+  const showNotAuthorized = sp?.error === 'notauthorized';
+  const showSendError = sp?.error === 'send';
 
   return (
     <main
@@ -99,12 +95,63 @@ export default async function LoginPage({
           Paradise Peak
         </h1>
         <p style={{ margin: '0 0 1.5rem', color: '#7A6E56', fontSize: '0.95rem', textAlign: 'center' }}>
-          Kitchen &amp; ops dashboard
+          Sign in with your email
         </p>
 
-        <form action={login}>
+        {sent && (
+          <p
+            role="status"
+            style={{
+              background: '#E7F0E3',
+              border: '1px solid #A9C79A',
+              color: '#33622B',
+              borderRadius: 10,
+              padding: '0.75rem 0.9rem',
+              fontSize: '0.9rem',
+              margin: '0 0 1.25rem',
+            }}
+          >
+            Check your inbox for a sign-in link from Supabase.
+          </p>
+        )}
+
+        {showNotAuthorized && (
+          <p
+            role="alert"
+            style={{
+              background: '#F6E3DE',
+              border: '1px solid #DDA593',
+              color: '#B84E3A',
+              borderRadius: 10,
+              padding: '0.75rem 0.9rem',
+              fontSize: '0.9rem',
+              margin: '0 0 1.25rem',
+            }}
+          >
+            This email isn&apos;t authorized. Contact an administrator.
+          </p>
+        )}
+
+        {showSendError && (
+          <p
+            role="alert"
+            style={{
+              background: '#F6E3DE',
+              border: '1px solid #DDA593',
+              color: '#B84E3A',
+              borderRadius: 10,
+              padding: '0.75rem 0.9rem',
+              fontSize: '0.9rem',
+              margin: '0 0 1.25rem',
+            }}
+          >
+            Couldn&apos;t send the link. Try again.
+          </p>
+        )}
+
+        <form action={sendMagicLink}>
           <label
-            htmlFor="pin"
+            htmlFor="email"
             style={{
               display: 'block',
               fontSize: '0.85rem',
@@ -113,40 +160,27 @@ export default async function LoginPage({
               color: '#28251D',
             }}
           >
-            Enter PIN
+            Email address
           </label>
           <input
-            id="pin"
-            name="pin"
-            type="password"
-            inputMode="numeric"
-            autoComplete="off"
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
             autoFocus
             required
             style={{
               width: '100%',
               padding: '0.75rem 0.9rem',
               fontSize: '1.1rem',
-              border: `1px solid ${showError ? '#B84E3A' : '#D6CCB6'}`,
+              border: '1px solid #D6CCB6',
               borderRadius: 10,
               background: '#FFFFFF',
               color: '#28251D',
               outline: 'none',
               boxSizing: 'border-box',
-              letterSpacing: '0.15em',
             }}
           />
-          {showError && (
-            <p
-              style={{
-                color: '#B84E3A',
-                fontSize: '0.85rem',
-                margin: '0.5rem 0 0',
-              }}
-            >
-              Wrong PIN. Try again.
-            </p>
-          )}
 
           <button
             type="submit"
@@ -163,7 +197,7 @@ export default async function LoginPage({
               cursor: 'pointer',
             }}
           >
-            Continue
+            Send magic link
           </button>
         </form>
       </div>
