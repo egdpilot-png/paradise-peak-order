@@ -38,6 +38,12 @@ QR_TOKEN_SECRET=some-64-char-random-hex
 NEXT_PUBLIC_KITCHEN_WHATSAPP=+590XXXXXXXXX
 ```
 
+## Dashboard auth
+
+The kitchen/ops dashboard (`/dashboard/*`) uses **magic-link (Supabase Auth)**. Only emails present in `public.dashboard_users` can sign in — a DB trigger rejects sign-ups for any other address. To add staff, insert a row into `public.dashboard_users` in Supabase (email, role, display_name).
+
+Sign-in flow: `/dashboard/login` → email → `supabase.auth.signInWithOtp` → link lands on `/auth/callback` → session cookie set → redirected to `/dashboard/tonight`. Sign out via `/dashboard/logout`.
+
 ## Route flow
 
 1. Guest scans QR sticker → hits `https://order.pirateatnight.com/order/eyJhbGciOi...`
