@@ -1,56 +1,88 @@
-// Magic-link login for the dashboard (Supabase Auth).
+'use client';
+
+// Magic-link login for the dashboard (Supabase Auth, PKCE flow).
+//
+// This page is a client component so the PKCE code_verifier is stored in the
+// user's browser. That means:
+//   • The magic-link email contains a `?code=...` in the URL, NOT a one-time
+//     token — Gmail's link scanner cannot burn the login by pre-fetching it.
+//   • Only the user's browser (which holds the verifier) can complete the
+//     exchange at /auth/callback.
+//
 // Only emails present in `dashboard_users` are authorized — the DB trigger
 // `enforce_dashboard_allowlist` rejects sign-ups for anyone else.
 
-import { redirect } from 'next/navigation';
-import { headers } from 'next/headers';
-import { createSupabaseServerClient } from '@/lib/supabase-server';
+import { useState, type FormEvent } from 'react';
+import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
 
-export const dynamic = 'force-dynamic';
+type Status =
+  | { kind: 'idle' }
+  | { kind: 'submitting' }
+  | { kind: 'sent' }
+  | { kind: 'error'; message: string };
 
-async function sendMagicLink(formData: FormData) {
-  'use server';
+export default function LoginPage() {
+  const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<Status>({ kind: 'idle' });
 
-  const email = String(formData.get('email') || '').trim().toLowerCase();
-  if (!email) {
-    redirect('/dashboard/login?error=send');
-  }
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (status.kind === 'submitting' || status.kind === 'sent') return;
 
-  const hdrs = await headers();
-  const host = hdrs.get('x-forwarded-host') ?? hdrs.get('host');
-  const proto = hdrs.get('x-forwarded-proto') ?? 'https';
-  const origin = `${proto}://${host}`;
-
-  const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: {
-      emailRedirectTo: `${origin}/auth/callback?next=/dashboard/tonight`,
-      shouldCreateUser: true,
-    },
-  });
-
-  if (error) {
-    const msg = error.message || '';
-    const code = (error as { code?: string }).code;
-    if (msg.includes('Access denied') || code === '42501') {
-      redirect('/dashboard/login?error=notauthorized');
+    const cleaned = email.trim().toLowerCase();
+    if (!cleaned) {
+      setStatus({ kind: 'error', message: 'Enter your email address.' });
+      return;
     }
-    redirect('/dashboard/login?error=send');
+
+    setStatus({ kind: 'submitting' });
+
+    try {
+      const supabase = getSupabaseBrowserClient();
+      const origin = window.location.origin;
+      const { error } = await supabase.auth.signInWithOtp({
+        email: cleaned,
+        options: {
+          emailRedirectTo: `${origin}/auth/callback?next=/dashboard/tonight`,
+          shouldCreateUser: true,
+        },
+      });
+
+      if (error) {
+        const msg = error.message || '';
+        const code = (error as { code?: string }).code;
+        if (msg.includes('Access denied') || code === '42501') {
+          setStatus({
+            kind: 'error',
+            message: "This email isn't authorized. Contact an administrator.",
+          });
+          return;
+        }
+        if (/rate limit|only request this after/i.test(msg)) {
+          setStatus({
+            kind: 'error',
+            message:
+              'A link was already requested recently. Wait about a minute and try again.',
+          });
+          return;
+        }
+        setStatus({
+          kind: 'error',
+          message: "Couldn't send the link. Try again.",
+        });
+        return;
+      }
+
+      setStatus({ kind: 'sent' });
+    } catch {
+      setStatus({
+        kind: 'error',
+        message: "Couldn't send the link. Try again.",
+      });
+    }
   }
 
-  redirect('/dashboard/login?sent=1');
-}
-
-export default async function LoginPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ sent?: string; error?: string }>;
-}) {
-  const sp = await searchParams;
-  const sent = sp?.sent === '1';
-  const showNotAuthorized = sp?.error === 'notauthorized';
-  const showSendError = sp?.error === 'send';
+  const disabled = status.kind === 'submitting' || status.kind === 'sent';
 
   return (
     <main
@@ -77,6 +109,7 @@ export default async function LoginPage({
         }}
       >
         <div style={{ textAlign: 'center', marginBottom: '0.75rem' }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/logo.jpg"
             alt="Pirate By Night"
@@ -94,11 +127,18 @@ export default async function LoginPage({
         >
           Paradise Peak
         </h1>
-        <p style={{ margin: '0 0 1.5rem', color: '#7A6E56', fontSize: '0.95rem', textAlign: 'center' }}>
+        <p
+          style={{
+            margin: '0 0 1.5rem',
+            color: '#7A6E56',
+            fontSize: '0.95rem',
+            textAlign: 'center',
+          }}
+        >
           Sign in with your email
         </p>
 
-        {sent && (
+        {status.kind === 'sent' && (
           <p
             role="status"
             style={{
@@ -111,11 +151,11 @@ export default async function LoginPage({
               margin: '0 0 1.25rem',
             }}
           >
-            Check your inbox for a sign-in link from Supabase.
+            Check your inbox for a sign-in link. It expires in about 1 hour.
           </p>
         )}
 
-        {showNotAuthorized && (
+        {status.kind === 'error' && (
           <p
             role="alert"
             style={{
@@ -128,28 +168,11 @@ export default async function LoginPage({
               margin: '0 0 1.25rem',
             }}
           >
-            This email isn&apos;t authorized. Contact an administrator.
+            {status.message}
           </p>
         )}
 
-        {showSendError && (
-          <p
-            role="alert"
-            style={{
-              background: '#F6E3DE',
-              border: '1px solid #DDA593',
-              color: '#B84E3A',
-              borderRadius: 10,
-              padding: '0.75rem 0.9rem',
-              fontSize: '0.9rem',
-              margin: '0 0 1.25rem',
-            }}
-          >
-            Couldn&apos;t send the link. Try again.
-          </p>
-        )}
-
-        <form action={sendMagicLink}>
+        <form onSubmit={handleSubmit}>
           <label
             htmlFor="email"
             style={{
@@ -169,6 +192,9 @@ export default async function LoginPage({
             autoComplete="email"
             autoFocus
             required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={disabled}
             style={{
               width: '100%',
               padding: '0.75rem 0.9rem',
@@ -179,11 +205,13 @@ export default async function LoginPage({
               color: '#28251D',
               outline: 'none',
               boxSizing: 'border-box',
+              opacity: disabled ? 0.7 : 1,
             }}
           />
 
           <button
             type="submit"
+            disabled={disabled}
             style={{
               marginTop: '1.25rem',
               width: '100%',
@@ -194,10 +222,15 @@ export default async function LoginPage({
               background: '#28251D',
               border: 'none',
               borderRadius: 10,
-              cursor: 'pointer',
+              cursor: disabled ? 'default' : 'pointer',
+              opacity: disabled ? 0.7 : 1,
             }}
           >
-            Send magic link
+            {status.kind === 'submitting'
+              ? 'Sending…'
+              : status.kind === 'sent'
+              ? 'Link sent'
+              : 'Send magic link'}
           </button>
         </form>
       </div>
