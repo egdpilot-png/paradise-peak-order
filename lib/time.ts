@@ -7,6 +7,14 @@ const TZ = 'America/Marigot';
 export const ORDER_CUTOFF_HOUR = 10;   // 10:00 — orders lock, kitchen fires
 export const HARD_LOCK_HOUR = 14;      // 14:00 — no more changes, chef's choice
 
+// Demo/rehearsal switch. Set ORDER_WINDOW_OVERRIDE=open on the server to force
+// the guest ordering window open regardless of the clock. Leave unset in
+// normal operation.
+export function windowOverride(): WindowState | null {
+  const v = process.env.ORDER_WINDOW_OVERRIDE;
+  return v === 'open' ? 'open' : null;
+}
+
 interface WallTime {
   y: number; m: number; d: number; h: number; min: number;
 }
@@ -36,6 +44,7 @@ function serviceDateAsWall(iso: string): WallTime {
 
 // Returns true if the current Marigot time is before <hour>:00 on service_date.
 function isBeforeCutoff(serviceDate: string, hour: number): boolean {
+  if (windowOverride() === 'open') return true;
   const now = nowInMarigot();
   const svc = serviceDateAsWall(serviceDate);
   if (now.y !== svc.y || now.m !== svc.m || now.d !== svc.d) {
@@ -59,6 +68,8 @@ export function isBeforeHardLock(serviceDate: string): boolean {
 export type WindowState = 'open' | 'late' | 'past_hard_lock' | 'past_service';
 
 export function windowState(serviceDate: string): WindowState {
+  const forced = windowOverride();
+  if (forced) return forced;
   const now = nowInMarigot();
   const svc = serviceDateAsWall(serviceDate);
   const nowStamp = now.y * 10000 + now.m * 100 + now.d;

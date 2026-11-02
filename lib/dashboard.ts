@@ -5,6 +5,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import 'server-only';
+import { windowOverride } from '@/lib/time';
 import type {
   Guest,
   Menu,
@@ -288,6 +289,7 @@ export async function buildWhatsAppDigest(date: string): Promise<string> {
 // ----------------------------------------------------------------------
 
 function computeWindow(date: string): TonightSummary['windowState'] {
+  if (windowOverride() === 'open') return 'open';
   const now = new Date();
   const [Y, M, D] = date.split('-').map(Number);
   // service date at America/Marigot midnight is UTC 04:00
