@@ -5,7 +5,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import 'server-only';
-import { windowOverride } from '@/lib/time';
+import { windowOverride, nightKind, MIN_COVERS_ONSITE } from '@/lib/time';
 import type {
   Guest,
   Menu,
@@ -40,6 +40,12 @@ export interface TonightSummary {
   publishedAt: string | null;
   lockedAt: string | null;
   windowState: 'not_yet_open' | 'open' | 'late' | 'past_hard_lock' | 'past_service';
+  // Season 2026/27
+  nightKind: 'buffet' | 'plated' | 'closed';
+  minCoversOnsite: number;
+  serviceFormat: 'onsite' | 'delivered' | 'closed' | 'pending';
+  revenueCents: number;
+  chargedCents: number;
 }
 
 export interface CourseTallyRow {
@@ -100,8 +106,8 @@ export async function loadTonightSummary(date: string): Promise<TonightSummary> 
   const [menuRes, guestsRes, ordersRes, publishRes] = await Promise.all([
     sb.from('menus').select('*, menu_items(*)').eq('service_date', date).maybeSingle(),
     sb.rpc('guests_in_house', { d: date }),
-    sb.from('orders').select('id, room_number, status, cover_count').eq('service_date', date),
-    sb.from('menu_publish_log').select('*').eq('service_date', date).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+    sb.from('orders').select('id, room_number, status, cover_count, total_cents, payment_status').eq('service_date', date),
+    sb.from('service_nights').select('*').eq('service_date', date).maybeSingle(),
   ]);
 
   const menu: Menu | null = menuRes.data ? {
@@ -112,7 +118,8 @@ export async function loadTonightSummary(date: string): Promise<TonightSummary> 
     title_fr: menuRes.data.title_fr,
     subtitle: menuRes.data.subtitle,
     subtitle_fr: menuRes.data.subtitle_fr,
-    items: menuRes.data.menu_items ?? [],
+    cover_price_cents: menuRes.data.cover_price_cents ?? null,
+    items: (menuRes.data.menu_items ?? []).filter((i: any) => i.is_active !== false),
   } : null;
 
   const guests = (guestsRes.data ?? []) as any[];
@@ -136,9 +143,16 @@ export async function loadTonightSummary(date: string): Promise<TonightSummary> 
     roomsSubmitted: submittedOrders.length,
     roomsMissing: Math.max(0, roomsOccupied - submittedOrders.length - chefsChoice.length),
     roomsChefsChoice: chefsChoice.length,
-    publishedAt: publishRes.data?.created_at ?? null,
+    publishedAt: menuRes.data?.published_at ?? null,
     lockedAt: publishRes.data?.locked_at ?? null,
     windowState: computeWindow(date),
+    nightKind: nightKind(date),
+    minCoversOnsite: MIN_COVERS_ONSITE,
+    serviceFormat: nightKind(date) === 'closed'
+      ? 'closed'
+      : (publishRes.data?.service_format as any) ?? (computeWindow(date) === 'open' || computeWindow(date) === 'not_yet_open' ? 'pending' : (coversConfirmed >= MIN_COVERS_ONSITE ? 'onsite' : 'delivered')),
+    revenueCents: submittedOrders.reduce((s, o) => s + (o.total_cents ?? 0), 0),
+    chargedCents: submittedOrders.filter(o => o.payment_status === 'charged').reduce((s, o) => s + (o.total_cents ?? 0), 0),
   };
 }
 

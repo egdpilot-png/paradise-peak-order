@@ -4,13 +4,13 @@ import type { DishLibraryItem } from '@/lib/publisher';
 import type { CourseType } from '@/lib/types';
 import styles from '../publisher.module.css';
 
-const COURSES_IN_ORDER: CourseType[] = ['starter', 'main', 'dessert'];
+const PLATED_COURSES: CourseType[] = ['starter', 'main', 'dessert'];
+const BUFFET_COURSES: CourseType[] = ['starter', 'main', 'side', 'dessert'];
 const COURSE_LABEL: Record<CourseType, string> = {
   amuse: 'Amuse', starter: 'Starter', main: 'Main', side: 'Side', dessert: 'Dessert',
 };
 
 interface Props {
-  day: 'sat' | 'sun';
   label: string;
   state: {
     service_date: string;
@@ -19,6 +19,7 @@ interface Props {
     title_fr: string;
     subtitle: string;
     subtitle_fr: string;
+    cover_price_cents: number | null;
     items: Record<CourseType, string[]>;
   };
   focused: boolean;
@@ -32,8 +33,12 @@ interface Props {
 export function MenuBuilder({
   label, state, focused, onFocus, onChangeMeta, onRemove, onReorder, dishById,
 }: Props) {
-  const totalDishes =
-    state.items.starter.length + state.items.main.length + state.items.dessert.length;
+  const isBuffet = state.service_type === 'buffet';
+  const courses = isBuffet ? BUFFET_COURSES : PLATED_COURSES;
+  const totalDishes = courses.reduce((n, c) => n + state.items[c].length, 0);
+  const missingPrice = !isBuffet
+    ? courses.flatMap(c => state.items[c]).filter(id => dishById.get(id)?.price_eur == null).length
+    : 0;
 
   return (
     <section
@@ -57,17 +62,38 @@ export function MenuBuilder({
           />
         </div>
         <div className={styles.builderMeta}>
+          <span className={`${styles.builderKind} ${isBuffet ? styles.builderKindBuffet : styles.builderKindPlated}`}>
+            {isBuffet ? 'Buffet' : 'Plated · fixed menu'}
+          </span>
+          {isBuffet ? (
+            <label className={styles.builderPrice}>
+              <span>€ / person</span>
+              <input
+                className={styles.builderPriceInput}
+                inputMode="decimal"
+                value={state.cover_price_cents == null ? '' : String(state.cover_price_cents / 100)}
+                onChange={(e) => {
+                  const v = e.target.value.replace(',', '.').trim();
+                  onChangeMeta({ cover_price_cents: v === '' ? null : Math.round(Number(v) * 100) });
+                }}
+              />
+            </label>
+          ) : (
+            <span className={styles.builderCount}>
+              priced by dish{missingPrice > 0 ? ` · ${missingPrice} without price` : ''}
+            </span>
+          )}
           <span className={styles.builderCount}>{totalDishes} dishes</span>
         </div>
       </header>
 
       <div className={styles.builderCourses}>
-        {COURSES_IN_ORDER.map((course) => (
+        {courses.map((course) => (
           <div key={course} className={styles.builderCourse}>
             <div className={styles.builderCourseHead}>
               <h4 className={styles.builderCourseTitle}>{COURSE_LABEL[course]}</h4>
               <span className={styles.builderCourseCount}>
-                {state.items[course].length} · min 1
+                {state.items[course].length}{!isBuffet ? ' · min 1' : ''}
               </span>
             </div>
             {state.items[course].length === 0 ? (
@@ -83,7 +109,14 @@ export function MenuBuilder({
                     <li key={id} className={styles.builderDish}>
                       <div className={styles.builderDishGrip} aria-hidden>≡</div>
                       <div className={styles.builderDishBody}>
-                        <span className={styles.builderDishName}>{d.name}</span>
+                        <span className={styles.builderDishName}>
+                          {d.name}
+                          {!isBuffet && (
+                            <em className={d.price_eur == null ? styles.builderDishNoPrice : styles.builderDishPrice}>
+                              {d.price_eur == null ? ' · no price' : ` · ${d.price_eur} €`}
+                            </em>
+                          )}
+                        </span>
                         {d.description && (
                           <span className={styles.builderDishDesc}>{d.description}</span>
                         )}

@@ -91,3 +91,67 @@ export function formatServiceDate(iso: string, lang: 'en' | 'fr' = 'en'): string
     timeZone: 'UTC',
   }).format(date);
 }
+
+// ---------------------------------------------------------------------
+// Weekly service rhythm (season 2026/27, agreed 2 Nov 2026)
+//   Mon & Fri  → buffet, flat price per adult
+//   Tue/Wed/Thu/Sat → plated fixed menu, priced per dish
+//   Sun        → closed
+// ---------------------------------------------------------------------
+
+export type NightKind = 'buffet' | 'plated' | 'closed';
+
+export const BUFFET_PRICE_CENTS = 5500;
+export const MIN_COVERS_ONSITE = 4;
+
+/** 0 = Sunday … 6 = Saturday, computed on the calendar date itself. */
+export function weekdayOf(serviceDate: string): number {
+  const [y, m, d] = serviceDate.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).getUTCDay();
+}
+
+export function nightKind(serviceDate: string): NightKind {
+  const wd = weekdayOf(serviceDate);
+  if (wd === 0) return 'closed';
+  if (wd === 1 || wd === 5) return 'buffet';
+  return 'plated';
+}
+
+export function addDays(serviceDate: string, n: number): string {
+  const [y, m, d] = serviceDate.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d + n));
+  return dt.toISOString().slice(0, 10);
+}
+
+export function todayInMarigot(): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Marigot', year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(new Date());
+}
+
+/** Every calendar date from `from` (inclusive) to `to` (exclusive). */
+export function datesBetween(from: string, to: string): string[] {
+  const out: string[] = [];
+  for (let d = from; d < to && out.length < 60; d = addDays(d, 1)) out.push(d);
+  return out;
+}
+
+/** Monday of the ISO week containing `serviceDate`. */
+export function mondayOf(serviceDate: string): string {
+  const wd = weekdayOf(serviceDate);
+  return addDays(serviceDate, wd === 0 ? -6 : 1 - wd);
+}
+
+export function formatEuro(cents: number | null | undefined, lang: 'en' | 'fr' = 'en'): string {
+  if (cents == null) return '';
+  return new Intl.NumberFormat(lang === 'fr' ? 'fr-FR' : 'en-IE', {
+    style: 'currency', currency: 'EUR', minimumFractionDigits: cents % 100 === 0 ? 0 : 2,
+  }).format(cents / 100);
+}
+
+export function shortDate(iso: string, lang: 'en' | 'fr' = 'en'): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Intl.DateTimeFormat(lang === 'fr' ? 'fr-FR' : 'en-GB', {
+    weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC',
+  }).format(new Date(Date.UTC(y, m - 1, d)));
+}

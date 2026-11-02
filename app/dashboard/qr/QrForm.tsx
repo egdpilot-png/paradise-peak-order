@@ -317,7 +317,7 @@ export function QrForm({
                   fontFamily: 'Georgia, serif',
                 }}
               >
-                Scan to view tonight's menu and place your order.
+                Scan to see the menus and book your nights.
               </div>
               <div
                 style={{

@@ -242,3 +242,64 @@
   padding-bottom: 3px;
 }
 .linkAction:hover { color: #8C6425; border-color: #8C6425; }
+
+/* ---------- Stay overview & registration (season 2026/27) ---------- */
+.nights { display: flex; flex-direction: column; gap: 14px; }
+.night {
+  border: 1px solid var(--rule);
+  border-radius: 14px;
+  padding: 16px 18px;
+  background: #fff;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 6px 12px;
+  align-items: center;
+}
+.nightClosed { opacity: 0.55; background: transparent; }
+.nightDate { font-weight: 600; font-size: 1.02rem; color: var(--ink); }
+.nightKind { font-size: 0.85rem; color: var(--ink-soft); letter-spacing: 0.02em; }
+.nightStatus { grid-column: 1 / -1; font-size: 0.92rem; color: var(--ink-soft); }
+.nightStatusBooked { grid-column: 1 / -1; font-size: 0.92rem; color: #2f5d3a; }
+.pill {
+  display: inline-block; padding: 6px 12px; border-radius: 999px;
+  font-size: 0.82rem; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase;
+  border: 1px solid var(--brass); color: var(--brass); text-decoration: none; white-space: nowrap;
+}
+.pillSolid { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.pillMuted { border-color: var(--rule); color: var(--ink-soft); }
+.price { font-variant-numeric: tabular-nums; }
+.choicePrice { display: block; margin-top: 6px; font-size: 0.9rem; color: var(--brass); font-variant-numeric: tabular-nums; }
+.choiceSelected .choicePrice { color: #E2C285; }
+.totalRow {
+  display: flex; justify-content: space-between; align-items: baseline;
+  border-top: 1px solid var(--rule); padding-top: 14px; margin-top: 6px;
+  font-size: 1.05rem; font-weight: 600;
+}
+.card {
+  border: 1px solid var(--rule); border-radius: 14px; padding: 16px 18px; background: #fff; margin-bottom: 20px;
+}
+.cardTitle { font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 8px; }
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media (max-width: 480px) { .grid2 { grid-template-columns: 1fr; } }
+.field select {
+  font: inherit; padding: 12px 14px; border: 1px solid var(--rule); border-radius: 10px; background: #fff; color: var(--ink);
+}
+.checks { display: flex; flex-wrap: wrap; gap: 8px; }
+.check {
+  display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border: 1px solid var(--rule);
+  border-radius: 999px; font-size: 0.9rem; cursor: pointer; background: #fff;
+}
+.check input { margin: 0; }
+.consent { display: flex; gap: 10px; align-items: flex-start; font-size: 0.92rem; color: var(--ink-soft); line-height: 1.45; }
+.consent input { margin-top: 4px; }
+.consent a { color: var(--brass); }
+.langSwitch { display: flex; gap: 8px; justify-content: flex-end; margin-bottom: 8px; }
+.langSwitch button {
+  font: inherit; font-size: 0.8rem; letter-spacing: 0.06em; text-transform: uppercase; background: none; border: 1px solid var(--rule);
+  border-radius: 999px; padding: 4px 10px; cursor: pointer; color: var(--ink-soft);
+}
+.langSwitch button[aria-pressed='true'] { border-color: var(--ink); color: var(--ink); }
+.notice { background: #fbf4e4; border: 1px solid #e6cf9a; border-radius: 12px; padding: 12px 16px; font-size: 0.92rem; margin-bottom: 20px; }
+.back { display: inline-block; margin-bottom: 16px; color: var(--ink-soft); text-decoration: none; font-size: 0.9rem; }
+.back:hover { color: var(--brass); }
+.danger { color: #8a2d2d; background: none; border: none; font: inherit; text-decoration: underline; cursor: pointer; padding: 0; }

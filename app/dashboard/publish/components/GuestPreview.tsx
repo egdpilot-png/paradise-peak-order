@@ -9,27 +9,34 @@ import styles from '../publisher.module.css';
 interface Props {
   state: {
     service_date: string;
+    service_type: string;
     title: string;
     subtitle: string;
+    cover_price_cents: number | null;
     items: Record<CourseType, string[]>;
   };
   label: string;
   dishById: Map<string, DishLibraryItem>;
 }
 
-const COURSES_IN_ORDER: CourseType[] = ['starter', 'main', 'dessert'];
+const PLATED: CourseType[] = ['starter', 'main', 'dessert'];
+const BUFFET: CourseType[] = ['starter', 'main', 'side', 'dessert'];
 const COURSE_LABEL: Record<CourseType, string> = {
   amuse: 'To awaken', starter: 'To begin', main: 'Main course', side: 'On the side', dessert: 'To finish',
 };
 
 export function GuestPreview({ state, label, dishById }: Props) {
+  const isBuffet = state.service_type === 'buffet';
+  const COURSES_IN_ORDER = isBuffet ? BUFFET : PLATED;
   return (
     <div className={styles.previewInner}>
       <p className={styles.previewLabel}>Guest preview · {label}</p>
 
       <div className={styles.previewPhone}>
         <div className={styles.previewFrame}>
-          <p className={styles.previewEyebrow}>Pirate at Night · Tonight</p>
+          <p className={styles.previewEyebrow}>
+            Pirate at Night · {isBuffet ? `Buffet · ${state.cover_price_cents != null ? (state.cover_price_cents / 100).toFixed(0) + ' € / person' : 'price to set'}` : 'Plated dinner'}
+          </p>
           <h2 className={styles.previewTitle}>{state.title || 'Untitled menu'}</h2>
           {state.subtitle && <p className={styles.previewSubtitle}>{state.subtitle}</p>}
           <p className={styles.previewMeta}>{formatDate(state.service_date)}</p>
@@ -45,8 +52,10 @@ export function GuestPreview({ state, label, dishById }: Props) {
                     const d = dishById.get(id);
                     if (!d) return null;
                     return (
-                      <div key={id} className={i === 0 ? styles.previewChoiceOn : styles.previewChoice}>
-                        <span className={styles.previewChoiceName}>{d.name}</span>
+                      <div key={id} className={!isBuffet && i === 0 ? styles.previewChoiceOn : styles.previewChoice}>
+                        <span className={styles.previewChoiceName}>
+                          {d.name}{!isBuffet && d.price_eur != null ? ` · ${d.price_eur} €` : ''}
+                        </span>
                         {d.description && (
                           <span className={styles.previewChoiceDesc}>{d.description}</span>
                         )}
@@ -76,5 +85,5 @@ export function GuestPreview({ state, label, dishById }: Props) {
 
 function formatDate(iso: string): string {
   const d = new Date(iso + 'T12:00:00Z');
-  return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }) + ' · 18:00';
+  return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }) + ' · 19:00';
 }

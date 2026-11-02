@@ -1,4 +1,5 @@
 // Programmatic check called by the Monday-morning cron.
+// Season 2026/27: looks at the current week's six service nights (Mon–Sat).
 // Returns a decision object the caller uses to decide whether to notify.
 //
 // GET is idempotent and safe to retry.
@@ -6,13 +7,14 @@
 
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { nextWeekend } from '@/lib/publisher';
+import { defaultMonday, loadWeekContext } from '@/lib/publisher';
+import { nightKind } from '@/lib/time';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 type DayStatus = 'unpublished' | 'draft' | 'published';
-type Weekday = 'saturday' | 'sunday';
+type Weekday = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday';
 
 interface DaySnapshot {
   service_date: string;
@@ -28,12 +30,12 @@ interface Decision {
   ok: true;
   action: 'notify' | 'skip';
   reason:
-    | 'both_published'
+    | 'all_published'
     | 'unpublished_but_no_guests'
     | 'unpublished_with_guests'
     | 'draft_only_with_guests';
   checked_at: string;
-  weekend: { saturday: string; sunday: string };
+  week: { monday: string; dates: string[] };
   guests_in_house: number;
   language_breakdown: { en: number; fr: number };
   days: DaySnapshot[];
@@ -77,82 +79,52 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'forbidden' }, { status: 403 });
   }
 
-  const { saturday, sunday } = nextWeekend();
-  const sb = admin();
+  const monday = defaultMonday();
+  const ctx = await loadWeekContext(monday);
+  const WEEKDAYS: Weekday[] = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
-  const [menusRes, guestsRes] = await Promise.all([
-    sb
-      .from('menus')
-      .select('id, service_date, status, title, published_at, menu_items(count)')
-      .in('service_date', [saturday, sunday])
-      .in('status', ['draft', 'published']),
-    sb
-      .from('guests')
-      .select('id, language')
-      .lte('check_in', sunday)
-      .gt('check_out', saturday),
-  ]);
-
-  if (menusRes.error) return NextResponse.json({ error: menusRes.error.message }, { status: 500 });
-  if (guestsRes.error) return NextResponse.json({ error: guestsRes.error.message }, { status: 500 });
-
-  // Pick the freshest menu per date. Published wins over draft; then latest.
-  const rank = (s: string) => (s === 'published' ? 2 : s === 'draft' ? 1 : 0);
-  const bestByDate = new Map<string, any>();
-  for (const m of menusRes.data ?? []) {
-    const cur = bestByDate.get(m.service_date);
-    if (!cur || rank(m.status) > rank(cur.status)) bestByDate.set(m.service_date, m);
-  }
-
-  const dayPairs: Array<{ date: string; weekday: Weekday }> = [
-    { date: saturday, weekday: 'saturday' },
-    { date: sunday, weekday: 'sunday' },
-  ];
-
-  const days: DaySnapshot[] = dayPairs.map(({ date, weekday }) => {
-    const m = bestByDate.get(date);
+  const days: DaySnapshot[] = ctx.dates.map((date, i) => {
+    const m = ctx.existing[date];
     return {
       service_date: date,
-      weekday,
+      weekday: WEEKDAYS[i],
       status: ((m?.status as DayStatus | undefined) ?? 'unpublished'),
       menu_id: m?.id ?? null,
       title: m?.title ?? null,
       published_at: m?.published_at ?? null,
-      dish_count: m?.menu_items?.[0]?.count ?? 0,
+      dish_count: m?.items.length ?? 0,
     };
   });
 
-  const guests = guestsRes.data ?? [];
-  const breakdown = { en: 0, fr: 0 };
-  for (const g of guests as Array<{ language?: string }>) {
-    if (g.language === 'fr') breakdown.fr += 1; else breakdown.en += 1;
-  }
+  const guestsCount = ctx.guestsThisWeek;
+  const breakdown = ctx.languageBreakdown;
 
   const unpublished = days.filter(d => d.status !== 'published');
   const draftsOnly = unpublished.every(d => d.status === 'draft');
-  const shouldNotify = unpublished.length > 0 && guests.length > 0;
+  const shouldNotify = unpublished.length > 0 && guestsCount > 0;
 
   let reason: Decision['reason'];
   let message: Decision['message'] = null;
 
   if (unpublished.length === 0) {
-    reason = 'both_published';
-  } else if (guests.length === 0) {
+    reason = 'all_published';
+  } else if (guestsCount === 0) {
     reason = 'unpublished_but_no_guests';
   } else {
     reason = draftsOnly ? 'draft_only_with_guests' : 'unpublished_with_guests';
 
     const parts = unpublished.map(d => {
-      const label = d.weekday === 'saturday' ? 'Sat' : 'Sun';
-      if (d.status === 'draft') return `${label} ${shortDate(d.service_date)} draft (${d.dish_count} dishes)`;
-      return `${label} ${shortDate(d.service_date)} not published`;
+      const label = d.weekday.slice(0, 3).replace(/^./, c => c.toUpperCase());
+      const kind = nightKind(d.service_date) === 'buffet' ? 'buffet' : 'plated';
+      if (d.status === 'draft') return `${label} ${shortDate(d.service_date)} ${kind} draft (${d.dish_count} dishes)`;
+      return `${label} ${shortDate(d.service_date)} ${kind} not published`;
     });
-    const guestCopy = `${guests.length} guest${guests.length === 1 ? '' : 's'} in-house · ${breakdown.en} EN / ${breakdown.fr} FR`;
-    const url = `${baseUrlFor(req)}/dashboard/publish?saturday=${saturday}`;
+    const guestCopy = `${guestsCount} guest${guestsCount === 1 ? '' : 's'} in-house this week · ${breakdown.en} EN / ${breakdown.fr} FR`;
+    const url = `${baseUrlFor(req)}/dashboard/publish?week=${monday}`;
 
     message = {
-      title: draftsOnly ? 'Weekend menu still a draft' : 'Weekend menu not published',
-      body: `${parts.join(' · ')}. ${guestCopy}. Guests expect the QR menu today.`,
+      title: draftsOnly ? 'This week\'s menus are still drafts' : 'This week\'s menus are not all published',
+      body: `${parts.join(' · ')}. ${guestCopy}. Guests book from the published menus.`,
       url,
     };
   }
@@ -162,8 +134,8 @@ export async function GET(req: Request) {
     action: shouldNotify ? 'notify' : 'skip',
     reason,
     checked_at: new Date().toISOString(),
-    weekend: { saturday, sunday },
-    guests_in_house: guests.length,
+    week: { monday, dates: ctx.dates },
+    guests_in_house: guestsCount,
     language_breakdown: breakdown,
     days,
     message,

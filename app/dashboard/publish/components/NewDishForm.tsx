@@ -31,6 +31,7 @@ export function NewDishForm({ defaultCourse, onCreated, onCancel }: Props) {
   );
   const [tags, setTags] = useState<string[]>([]);
   const [allergens, setAllergens] = useState<string[]>([]);
+  const [price, setPrice] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -54,6 +55,7 @@ export function NewDishForm({ defaultCourse, onCreated, onCancel }: Props) {
           course,
           tags,
           allergens,
+          price_eur: price.trim() === '' ? null : Number(price.replace(',', '.')),
         }),
       });
       if (!res.ok) {
@@ -97,6 +99,17 @@ export function NewDishForm({ defaultCourse, onCreated, onCancel }: Props) {
           onChange={(e) => setNameFr(e.target.value)}
           placeholder="Mahi grillé, sauce vierge"
           maxLength={120}
+        />
+      </label>
+
+      <label className={styles.newDishField}>
+        <span className={styles.newDishLabel}>Price € (plated nights) · leave empty for buffet-only dishes</span>
+        <input
+          className={styles.newDishInput}
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          inputMode="decimal"
+          placeholder="e.g. 24"
         />
       </label>
 

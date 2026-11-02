@@ -41,7 +41,7 @@ export function sbService() {
 export async function loadMenuForDate(serviceDate: string): Promise<Menu | null> {
   const { data: menu, error: mErr } = await sbService()
     .from('menus')
-    .select('id, service_date, service_type, title, title_fr, subtitle, subtitle_fr')
+    .select('id, service_date, service_type, title, title_fr, subtitle, subtitle_fr, cover_price_cents')
     .eq('service_date', serviceDate)
     .eq('is_published', true)
     .maybeSingle();
@@ -52,6 +52,7 @@ export async function loadMenuForDate(serviceDate: string): Promise<Menu | null>
     .from('menu_items')
     .select('*')
     .eq('menu_id', menu.id)
+    .eq('is_active', true)
     .order('course')
     .order('display_order');
 
@@ -80,6 +81,7 @@ export async function loadOrderForRoomDate(
     .select('*')
     .eq('room_number', room)
     .eq('service_date', serviceDate)
+    .neq('status', 'cancelled')
     .maybeSingle();
 
   if (!order) return null;
@@ -114,6 +116,8 @@ export async function upsertOrder(input: SubmitOrderInput): Promise<Order> {
     .select('id')
     .eq('room_number', input.room)
     .eq('service_date', input.serviceDate)
+    .order('created_at', { ascending: false })
+    .limit(1)
     .maybeSingle();
 
   let orderId: string;
@@ -126,6 +130,8 @@ export async function upsertOrder(input: SubmitOrderInput): Promise<Order> {
         notes: input.notes ?? null,
         status: 'submitted',
         submitted_at: new Date().toISOString(),
+        cancelled_at: null,
+        guest_id: input.guestId ?? null,
         entry_channel: input.entryChannel ?? 'guest_qr',
       })
       .eq('id', orderId);
@@ -162,7 +168,68 @@ export async function upsertOrder(input: SubmitOrderInput): Promise<Order> {
     );
   }
 
+  // Price the order: buffet = flat cover price × covers; plated = Σ dish prices × covers.
+  const total = await computeOrderTotal(input.menuId, input.coverCount, input.choices.map((c) => c.menuItemId));
+  await svc.from('orders').update({ total_cents: total }).eq('id', orderId);
+
   const full = await loadOrderForRoomDate(input.room, input.serviceDate);
   if (!full) throw new Error('order reload failed');
   return full;
+}
+
+export async function computeOrderTotal(menuId: string, covers: number, menuItemIds: string[]): Promise<number> {
+  const svc = sbService();
+  const { data: menu } = await svc.from('menus').select('service_type, cover_price_cents').eq('id', menuId).single();
+  if (!menu) return 0;
+  if (menu.service_type === 'buffet') return (menu.cover_price_cents ?? 0) * covers;
+  if (menuItemIds.length === 0) return 0;
+  const { data: items } = await svc.from('menu_items').select('id, price_cents').in('id', menuItemIds);
+  const perCover = (items ?? []).reduce((acc: number, it: any) => acc + (it.price_cents ?? 0), 0);
+  return perCover * covers;
+}
+
+export async function cancelOrder(orderId: string): Promise<void> {
+  await sbService()
+    .from('orders')
+    .update({ status: 'cancelled', cancelled_at: new Date().toISOString() })
+    .eq('id', orderId);
+}
+
+// -------------------- Stay-level reads (self-registered guests) --------------------
+
+export async function loadGuestById(id: string): Promise<Guest | null> {
+  const { data } = await sbService().from('guests').select('*').eq('id', id).maybeSingle();
+  return (data as Guest) ?? null;
+}
+
+/** Published menus between two dates (inclusive), without items. */
+export async function loadMenusBetween(from: string, to: string): Promise<Menu[]> {
+  const { data } = await sbService()
+    .from('menus')
+    .select('id, service_date, service_type, title, title_fr, subtitle, subtitle_fr, cover_price_cents')
+    .eq('is_published', true)
+    .gte('service_date', from)
+    .lte('service_date', to)
+    .order('service_date');
+  return ((data ?? []) as any[]).map((m) => ({ ...m, items: [] })) as Menu[];
+}
+
+/** All non-cancelled orders for a room between two dates (inclusive), with items. */
+export async function loadOrdersForRoomBetween(room: string, from: string, to: string): Promise<Order[]> {
+  const svc = sbService();
+  const { data: orders } = await svc
+    .from('orders')
+    .select('*')
+    .eq('room_number', room)
+    .gte('service_date', from)
+    .lte('service_date', to)
+    .neq('status', 'cancelled')
+    .order('service_date');
+  if (!orders || orders.length === 0) return [];
+  const ids = orders.map((o: any) => o.id);
+  const { data: items } = await svc.from('order_items').select('*').in('order_id', ids);
+  return (orders as any[]).map((o) => ({
+    ...o,
+    items: ((items ?? []) as any[]).filter((i) => i.order_id === o.id),
+  })) as Order[];
 }

@@ -1,7 +1,7 @@
 'use server';
 
 import { createClient } from '@supabase/supabase-js';
-import { issueTokenForStay } from '@/lib/token';
+import { issueStayToken } from '@/lib/token';
 import { getDashboardUser, canAct } from '@/lib/auth';
 import { revalidatePath } from 'next/cache';
 
@@ -126,8 +126,9 @@ export async function issueQrForRoom(formData: FormData): Promise<IssueResult> {
     guestId = data.id;
   }
 
-  const token = issueTokenForStay(room, checkOut, guestId ?? undefined);
-  const order_url = `${APP_URL}/order/${token}`;
+  // Stay token keyed on the guest: lands on the stay page (all nights).
+  const token = issueStayToken(guestId!, room, checkOut);
+  const order_url = `${APP_URL}/my/${token}`;
 
   revalidatePath('/dashboard/tonight');
   revalidatePath('/dashboard/qr');

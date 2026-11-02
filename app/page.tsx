@@ -33,10 +33,14 @@ export default function HomePage() {
           Paradise Peak
         </h1>
         <p style={{ color: 'var(--ink-soft)', margin: '0 0 2rem' }}>
-          Villa ordering & kitchen operations.
+          Private dinners at the Peak, Monday to Saturday.
         </p>
         <p style={{ color: 'var(--ink-soft)', fontSize: '0.9rem' }}>
-          Guests: scan the QR card in your suite to see tonight&apos;s menu.
+          Guests:{' '}
+          <Link href="/join" style={{ color: 'var(--brass)', borderBottom: '1px solid currentColor' }}>
+            register and book your nights
+          </Link>
+          .
           <br />
           Staff:{' '}
           <Link

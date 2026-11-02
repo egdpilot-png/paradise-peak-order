@@ -750,3 +750,140 @@
 .newDishSave:hover { background: #E5B96B; }
 .newDishSave:disabled { opacity: 0.5; cursor: not-allowed; }
 .newDishCancel:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ---- Week builder (season 2026/27) ---- */
+.weekNav {
+  color: #B8873F;
+  text-decoration: none;
+  font-size: 26px;
+  line-height: 1;
+  padding: 0 6px;
+}
+.weekNav:hover { color: #E6C98A; }
+
+.dayTabs {
+  display: flex;
+  gap: 8px;
+  padding: 12px 28px 0;
+  background: #F4EFE4;
+  border-bottom: 1px solid #E2D9C6;
+  overflow-x: auto;
+}
+.dayTab {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 128px;
+  padding: 10px 12px 8px;
+  border: 1px solid #E2D9C6;
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  background: #FBF8F1;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  color: #1C1A17;
+}
+.dayTab:hover { background: #FFFDF8; }
+.dayTabActive {
+  background: #FFFFFF;
+  border-color: #B8873F;
+  box-shadow: 0 1px 0 #FFFFFF;
+  position: relative;
+  top: 1px;
+}
+.dayTabClosed { cursor: default; opacity: 0.55; background: #EFE9DC; }
+.dayTabName { font-family: Georgia, serif; font-size: 14px; }
+.dayTabKind {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #8B867B;
+  font-weight: 600;
+}
+.dayTabState {
+  font-size: 10.5px;
+  margin-top: 2px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: #ECE6D8;
+  color: #6F6A60;
+}
+.dayTabState_live { background: #DCEFD0; color: #2E6B1F; }
+.dayTabState_draft { background: #F7E9C8; color: #8A5E10; }
+.dayTabState_edited { background: #F9DAD2; color: #9B3A24; }
+
+.builderMeta { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.builderKind {
+  font-size: 10.5px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 3px;
+}
+.builderKindBuffet { background: #B8873F; color: #FFF; }
+.builderKindPlated { background: #1C1A17; color: #F4EFE4; }
+.builderPrice {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #8B867B;
+  font-weight: 600;
+}
+.builderPriceInput {
+  width: 64px;
+  padding: 4px 6px;
+  border: 1px solid #CBBFA9;
+  border-radius: 3px;
+  font: inherit;
+  font-size: 14px;
+  text-align: right;
+}
+.builderDishPrice { font-style: normal; color: #8B867B; font-size: 12px; }
+.builderDishNoPrice { font-style: normal; color: #B5412A; font-size: 12px; }
+
+.libraryPrice {
+  font-size: 11.5px;
+  color: #6F6A60;
+  white-space: nowrap;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: #F1EBDD;
+}
+.libraryPrice:hover { background: #E6DCC5; }
+.libraryPriceMissing { color: #B5412A; background: #F9DAD2; }
+.libraryPriceInput {
+  width: 56px;
+  padding: 2px 6px;
+  border: 1px solid #B8873F;
+  border-radius: 3px;
+  font: inherit;
+  font-size: 12.5px;
+  text-align: right;
+}
+
+.copyRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 14px;
+  font-size: 12px;
+  color: #6F6A60;
+}
+.copyBtn {
+  padding: 4px 10px;
+  border: 1px solid #CBBFA9;
+  border-radius: 14px;
+  background: #FFF;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+.copyBtn:hover { border-color: #B8873F; background: #FBF6EA; }
+.copyNone { font-style: italic; }

@@ -17,10 +17,11 @@ interface Props {
   onFilterChange: (v: string) => void;
   onAdd: (dish: DishLibraryItem) => void;
   onCreated: (dish: DishLibraryItem) => void;   // new dish saved to library
-  focusDay: 'sat' | 'sun';
+  onPriceChange: (dish: DishLibraryItem, priceEur: number | null) => void;
+  focusLabel: string;                            // e.g. 'Tuesday 3 Nov'
 }
 
-export function DishLibrary({ dishes, filter, onFilterChange, onAdd, onCreated, focusDay }: Props) {
+export function DishLibrary({ dishes, filter, onFilterChange, onAdd, onCreated, onPriceChange, focusLabel }: Props) {
   const [activeCourse, setActiveCourse] = useState<CourseType | 'all'>('all');
   const [creating, setCreating] = useState(false);
 
@@ -61,7 +62,7 @@ export function DishLibrary({ dishes, filter, onFilterChange, onAdd, onCreated, 
           )}
         </div>
         <p className={styles.libraryMeta}>
-          {dishes.length} dishes · click to add to <strong>{focusDay === 'sat' ? 'Saturday' : 'Sunday'}</strong>
+          {dishes.length} dishes · click to add to <strong>{focusLabel}</strong>
         </p>
       </header>
 
@@ -112,6 +113,7 @@ export function DishLibrary({ dishes, filter, onFilterChange, onAdd, onCreated, 
                   >
                     <div className={styles.libraryDishHead}>
                       <span className={styles.libraryDishName}>{d.name}</span>
+                      <PriceField dish={d} onChange={onPriceChange} />
                       {d.times_served > 0 && (
                         <span className={styles.libraryDishStat} title="Times served">×{d.times_served}</span>
                       )}
@@ -140,5 +142,43 @@ export function DishLibrary({ dishes, filter, onFilterChange, onAdd, onCreated, 
         )}
       </div>
     </div>
+  );
+}
+
+function PriceField({ dish, onChange }: { dish: DishLibraryItem; onChange: (d: DishLibraryItem, p: number | null) => void }) {
+  const [val, setVal] = useState(dish.price_eur == null ? '' : String(dish.price_eur));
+  const [editing, setEditing] = useState(false);
+  if (!editing) {
+    return (
+      <span
+        role="button"
+        tabIndex={0}
+        className={`${styles.libraryPrice} ${dish.price_eur == null ? styles.libraryPriceMissing : ''}`}
+        title="Click to set the price"
+        onClick={(e) => { e.stopPropagation(); setVal(dish.price_eur == null ? '' : String(dish.price_eur)); setEditing(true); }}
+        onKeyDown={(e) => { if (e.key === 'Enter') { e.stopPropagation(); setEditing(true); } }}
+      >
+        {dish.price_eur == null ? 'set €' : `${dish.price_eur} €`}
+      </span>
+    );
+  }
+  const commit = () => {
+    setEditing(false);
+    const n = val.trim() === '' ? null : Number(val.replace(',', '.'));
+    if (n !== null && (!Number.isFinite(n) || n < 0)) return;
+    if (n !== dish.price_eur) onChange(dish, n);
+  };
+  return (
+    <input
+      autoFocus
+      className={styles.libraryPriceInput}
+      value={val}
+      inputMode="decimal"
+      placeholder="€"
+      onClick={(e) => e.stopPropagation()}
+      onChange={(e) => setVal(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); commit(); } if (e.key === 'Escape') setEditing(false); }}
+    />
   );
 }

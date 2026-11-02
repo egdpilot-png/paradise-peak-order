@@ -74,3 +74,12 @@ export function issueTokenForStay(
     property: 'paradise_peak',
   });
 }
+
+/** Token handed to a self-registered guest: covers the whole stay, keyed on guest_id. */
+export function issueStayToken(guestId: string, room: string, checkOut: string): string {
+  const now = Math.floor(Date.now() / 1000);
+  const [y, m, d] = checkOut.split('-').map(Number);
+  // valid until the day after check-out, 23:59 Marigot (UTC-4)
+  const expires = Math.floor(Date.UTC(y, m - 1, d + 1, 23 + 4, 59, 0) / 1000);
+  return signToken({ room, guest_id: guestId, issued_at: now, expires_at: expires, property: 'paradise_peak' });
+}

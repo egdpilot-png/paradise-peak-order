@@ -39,6 +39,7 @@ export interface MenuItem {
   is_default: boolean;
   display_order: number;
   photo_url: string | null;
+  price_cents: number | null;
 }
 
 export interface Menu {
@@ -49,6 +50,7 @@ export interface Menu {
   title_fr: string | null;
   subtitle: string | null;
   subtitle_fr: string | null;
+  cover_price_cents: number | null;
   items: MenuItem[];
 }
 
@@ -60,7 +62,22 @@ export interface Guest {
   allergy_notes: string | null;
   vip_notes: string | null;
   language: 'en' | 'fr';
+  email?: string | null;
+  phone?: string | null;
+  whatsapp_number?: string | null;
+  check_in?: string;
+  check_out?: string;
+  party_size?: number | null;
+  booking_ref?: string | null;
+  card_brand?: string | null;
+  card_last4?: string | null;
+  stripe_customer_id?: string | null;
+  stripe_payment_method_id?: string | null;
+  terms_accepted_at?: string | null;
 }
+
+export type PaymentStatus = 'none' | 'card_on_file' | 'charged' | 'failed' | 'refunded' | 'waived';
+export type ServiceFormat = 'onsite' | 'delivered' | 'closed';
 
 export interface Order {
   id: string;
@@ -74,6 +91,8 @@ export interface Order {
   notes: string | null;
   submitted_at: string | null;
   locked_at: string | null;
+  total_cents?: number | null;
+  payment_status?: PaymentStatus;
   items: OrderItem[];
 }
 
@@ -87,7 +106,7 @@ export interface OrderItem {
 
 // The signed payload baked into every QR code.
 export interface QrTokenPayload {
-  room: string;              // room number
+  room: string;              // room number ('' for a stay token issued at self-registration)
   guest_id?: string;         // optional pre-linked guest
   issued_at: number;         // unix seconds
   expires_at: number;        // unix seconds — typically end of stay
