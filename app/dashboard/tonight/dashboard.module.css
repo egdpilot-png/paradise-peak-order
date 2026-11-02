@@ -525,3 +525,7 @@
   letter-spacing: 0.5px;
   text-align: center;
 }
+
+/* Kitchen TV (32" HD, read from 2–3 m): slightly larger type, no hover affordances */
+.kiosk { font-size: 108%; cursor: none; }
+.kiosk .main { padding-bottom: 24px; }

@@ -102,6 +102,10 @@ export function formatServiceDate(iso: string, lang: 'en' | 'fr' = 'en'): string
 export type NightKind = 'buffet' | 'plated' | 'closed';
 
 export const BUFFET_PRICE_CENTS = 5500;
+/** Paradise Peak commission on dinner sales, in basis points (1000 = 10 %). Settled monthly. */
+export const PARTNER_COMMISSION_BPS = 1000;
+/** Default end of the season used by "Publish season". */
+export const SEASON_END_DEFAULT = '2027-04-30';
 export const MIN_COVERS_ONSITE = 4;
 
 /** 0 = Sunday … 6 = Saturday, computed on the calendar date itself. */

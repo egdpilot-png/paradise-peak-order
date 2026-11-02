@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import type { DashboardUser } from '@/lib/auth';
 import type { WeekContext, DishLibraryItem, MenuDraft, LoadedMenu } from '@/lib/publisher';
 import type { CourseType } from '@/lib/types';
-import { nightKind, BUFFET_PRICE_CENTS } from '@/lib/time';
+import { nightKind, BUFFET_PRICE_CENTS, SEASON_END_DEFAULT } from '@/lib/time';
 import { DishLibrary } from './components/DishLibrary';
 import { MenuBuilder } from './components/MenuBuilder';
 import { GuestPreview } from './components/GuestPreview';
@@ -267,6 +267,34 @@ export function PublisherEditor({ context }: Props) {
     publishDrafts(ready, `${ready.length} night${ready.length === 1 ? '' : 's'}`);
   }
 
+  function publishSeason(until: string, overwrite: boolean) {
+    const ready: MenuDraft[] = [];
+    for (const d of context.dates) {
+      const b = days[d];
+      if (!hasContent(b)) continue;
+      const err = validate(b);
+      if (err) { setStatus(err); setFocusDate(d); return; }
+      ready.push(toDraft(b));
+    }
+    if (!ready.length) { setStatus('No night is ready to publish yet.'); return; }
+    const names = ready.map(r => dayName(r.service_date).slice(0, 3)).join(', ');
+    if (!confirm(`Publish ${names} every week until ${until}?${overwrite ? ' Nights already published will be replaced.' : ''}`)) return;
+    startTransition(async () => {
+      setStatus(null);
+      try {
+        const res = await fetch('/api/dashboard/publish/season', {
+          method: 'POST', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ drafts: ready, monday: context.monday, until, overwrite }),
+        });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok) throw new Error(json?.error ?? `HTTP ${res.status}`);
+        const r = json.result;
+        setStatus(`Season published · ${r.published} nights over ${r.weeks} weeks${r.skippedExisting ? ` · ${r.skippedExisting} already published kept` : ''}${r.firstDate ? ` · ${r.firstDate} → ${r.lastDate}` : ''}`);
+        router.refresh();
+      } catch (e: any) { setStatus(`Season publish failed · ${e.message}`); }
+    });
+  }
+
   const weekLabel = formatWeekLabel(context.dates[0], context.dates[5]);
   const prevWeek = shiftIso(context.monday, -7);
   const nextWeek = shiftIso(context.monday, 7);
@@ -293,6 +321,8 @@ export function PublisherEditor({ context }: Props) {
           onSaveDraft={saveDraft}
           onPublish={publishFocused}
           onPublishWeek={publishWeek}
+          onPublishSeason={publishSeason}
+          seasonEndDefault={SEASON_END_DEFAULT}
           publishLabel={shortLabel(focusDate)}
           hasExistingPublished={!!focused.publishedAt}
         />

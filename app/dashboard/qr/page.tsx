@@ -19,6 +19,8 @@ export default async function QrPage({
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://menu.piratebynight.com';
   const joinUrl = `${appUrl}/join`;
   const emailUrl = `${appUrl}/join?src=email`;
+  const kitchenKey = process.env.KITCHEN_SCREEN_KEY ?? '';
+  const kitchenUrl = kitchenKey ? `${appUrl}/kitchen?key=${encodeURIComponent(kitchenKey)}` : null;
   const qrOpts = { errorCorrectionLevel: 'M' as const, margin: 1, width: 480, color: { dark: '#28251D', light: '#FBF8F1' } };
   const [propertyQr, emailQr] = await Promise.all([QRCode.toDataURL(joinUrl, qrOpts), QRCode.toDataURL(emailUrl, qrOpts)]);
 
@@ -79,6 +81,21 @@ export default async function QrPage({
         </header>
 
         <PropertyQr qrDataUrl={propertyQr} emailQrDataUrl={emailQr} joinUrl={joinUrl} emailUrl={emailUrl} />
+
+        {user.role === 'admin' && (
+          <>
+            <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '1.4rem', margin: '2.5rem 0 0.25rem' }}>Kitchen TV screen</h2>
+            {kitchenUrl ? (
+              <p style={{ fontSize: '0.92rem', lineHeight: 1.5 }}>
+                Open this link once in the TV browser and bookmark it. It shows tonight's board without a login, read-only, and rolls over at midnight by itself.
+                Keep it private — anyone with the link can see the orders.<br />
+                <code style={{ display: 'inline-block', marginTop: 6, padding: '6px 10px', background: '#F4EFE4', borderRadius: 6, wordBreak: 'break-all' }}>{kitchenUrl}</code>
+              </p>
+            ) : (
+              <p style={{ fontSize: '0.92rem', color: '#8B3A2E' }}>No KITCHEN_SCREEN_KEY is set in the environment yet; the kitchen screen link is disabled.</p>
+            )}
+          </>
+        )}
 
         <h2 style={{ fontFamily: 'Georgia, serif', fontSize: '1.4rem', margin: '2.5rem 0 0.25rem' }}>Register a guest manually</h2>
         <p style={{ color: '#7A6E56', fontSize: '0.95rem', margin: '0 0 1rem' }}>

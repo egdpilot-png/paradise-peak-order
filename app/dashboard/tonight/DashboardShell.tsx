@@ -25,6 +25,9 @@ interface Props {
   user: DashboardUser;
   date: string;
   canKitchenAct: boolean;
+  /** Kitchen TV mode: no navigation, no sign-out, reload target keeps the key. */
+  kiosk?: boolean;
+  homeHref?: string;
   initialData: {
     summary: TonightSummary;
     tally: CourseTallyRow[];
@@ -33,7 +36,7 @@ interface Props {
   };
 }
 
-export function DashboardShell({ user, date, canKitchenAct, initialData }: Props) {
+export function DashboardShell({ user, date, canKitchenAct, initialData, kiosk = false, homeHref = '/dashboard/tonight' }: Props) {
   const router = useRouter();
   const [lastPing, setLastPing] = useState<Date | null>(null);
   const [, startTransition] = useTransition();
@@ -68,14 +71,31 @@ export function DashboardShell({ user, date, canKitchenAct, initialData }: Props
     };
   }, [date, router]);
 
+  // Kitchen TV: the page is pinned to one date. Roll over to the new day at
+  // midnight (Marigot) and refresh every 5 minutes in case realtime drops.
+  useEffect(() => {
+    const todayMarigot = () =>
+      new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Marigot', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+    const pinned = new URLSearchParams(window.location.search).has('date');
+    const id = setInterval(() => {
+      if (!pinned && todayMarigot() !== date) {
+        window.location.href = homeHref;
+        return;
+      }
+      startTransition(() => router.refresh());
+    }, 5 * 60 * 1000);
+    return () => clearInterval(id);
+  }, [date, router, homeHref]);
+
   const { summary, tally, allergies, rooms } = initialData;
 
   return (
-    <div className={styles.page}>
+    <div className={`${styles.page} ${kiosk ? styles.kiosk : ''}`}>
       <HeaderRail
         summary={summary}
         userName={user.display_name ?? user.email}
         lastPing={lastPing}
+        kiosk={kiosk}
       />
       <main className={styles.main}>
         <KpiTiles summary={summary} />
@@ -88,7 +108,9 @@ export function DashboardShell({ user, date, canKitchenAct, initialData }: Props
           <ActionRail date={date} summary={summary} />
         )}
         <footer className={styles.footer}>
-          Pirate at Night × The Paradise Peak · Signed in as {user.display_name ?? user.email} ({user.role.replace('_', ' ')})
+          {kiosk
+            ? 'Pirate at Night × The Paradise Peak · Kitchen screen · read only'
+            : `Pirate at Night × The Paradise Peak · Signed in as ${user.display_name ?? user.email} (${user.role.replace('_', ' ')})`}
         </footer>
       </main>
     </div>

@@ -233,3 +233,82 @@ export function defaultMonday(): string {
   if (wd === 0 || (wd === 6 && local.getHours() >= 10)) monday.setUTCDate(monday.getUTCDate() + 7);
   return monday.toISOString().slice(0, 10);
 }
+
+
+export interface SeasonPublishResult {
+  weeks: number;
+  published: number;
+  skippedExisting: number;
+  skippedPast: number;
+  firstDate: string | null;
+  lastDate: string | null;
+}
+
+/**
+ * Repeat a week's drafts for every week from `monday` until `until` (inclusive).
+ * Nights before today are never touched. Nights that already have a published
+ * menu are left alone unless `overwrite` is true.
+ */
+export async function publishSeason(
+  drafts: MenuDraft[],
+  monday: string,
+  until: string,
+  actor: string,
+  overwrite = false,
+): Promise<SeasonPublishResult> {
+  const sb = admin();
+  const today = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Marigot', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+  const shift = (iso: string, days: number) => {
+    const d = new Date(iso + 'T12:00:00Z');
+    d.setUTCDate(d.getUTCDate() + days);
+    return d.toISOString().slice(0, 10);
+  };
+
+  // Build every candidate night
+  const candidates: MenuDraft[] = [];
+  let weeks = 0;
+  for (let w = 0; ; w++) {
+    const weekMonday = shift(monday, 7 * w);
+    if (weekMonday > until) break;
+    weeks += 1;
+    for (const d of drafts) {
+      const offset = Math.round((Date.parse(d.service_date + 'T12:00:00Z') - Date.parse(monday + 'T12:00:00Z')) / 86400000);
+      const date = shift(weekMonday, offset);
+      if (date > until) continue;
+      candidates.push({ ...d, service_date: date });
+    }
+    if (w > 60) break; // safety: ~14 months
+  }
+
+  const skippedPast = candidates.filter((c) => c.service_date < today).length;
+  let todo = candidates.filter((c) => c.service_date >= today);
+
+  let skippedExisting = 0;
+  if (!overwrite && todo.length) {
+    const { data: existing } = await sb
+      .from('menus')
+      .select('service_date')
+      .eq('is_published', true)
+      .gte('service_date', todo[0].service_date)
+      .lte('service_date', until);
+    const have = new Set((existing ?? []).map((m: any) => m.service_date));
+    skippedExisting = todo.filter((c) => have.has(c.service_date)).length;
+    todo = todo.filter((c) => !have.has(c.service_date));
+  }
+
+  // Publish in chunks of ~4 weeks per call
+  const CHUNK = 24;
+  for (let i = 0; i < todo.length; i += CHUNK) {
+    const { error } = await sb.rpc('publish_weekend_menus', { p_menus: todo.slice(i, i + CHUNK), p_actor: actor });
+    if (error) throw error;
+  }
+
+  return {
+    weeks,
+    published: todo.length,
+    skippedExisting,
+    skippedPast,
+    firstDate: todo[0]?.service_date ?? null,
+    lastDate: todo[todo.length - 1]?.service_date ?? null,
+  };
+}

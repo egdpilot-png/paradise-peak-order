@@ -887,3 +887,23 @@
 }
 .copyBtn:hover { border-color: #B8873F; background: #FBF6EA; }
 .copyNone { font-style: italic; }
+
+.seasonBox {
+  flex-basis: 100%;
+  margin-top: 10px;
+  padding: 14px 16px;
+  border: 1px solid #5A4A2A;
+  border-radius: 6px;
+  background: #2A241B;
+  color: #F4EFE4;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 560px;
+}
+.seasonTitle { margin: 0; font-family: Georgia, serif; font-size: 15px; }
+.seasonHelp { margin: 0; font-size: 12px; color: #C9C3B6; line-height: 1.45; }
+.seasonField { display: flex; align-items: center; gap: 10px; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; color: #C9C3B6; }
+.seasonField input { font: inherit; font-size: 14px; padding: 6px 8px; border-radius: 4px; border: 1px solid #5A4A2A; background: #FFF; color: #1C1A17; }
+.seasonCheck { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #F4EFE4; }
+.seasonActions { display: flex; gap: 10px; justify-content: flex-end; }

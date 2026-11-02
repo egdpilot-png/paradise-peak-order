@@ -33,10 +33,12 @@ export function HeaderRail({
   summary,
   userName,
   lastPing,
+  kiosk = false,
 }: {
   summary: TonightSummary;
   userName: string;
   lastPing: Date | null;
+  kiosk?: boolean;
 }) {
   return (
     <header className={styles.headerRail}>
@@ -47,11 +49,13 @@ export function HeaderRail({
           {serviceLabel(summary.serviceType)}
           {summary.menu ? ` · ${summary.menu.title}` : ''}
         </p>
-        <nav style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem', fontSize: '0.85rem' }}>
+        {!kiosk && <nav style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem', fontSize: '0.85rem' }}>
           <a href="/dashboard/publish" style={{ color: '#8B3A2E', textDecoration: 'none' }}>Publish menu</a>
           <span style={{ color: '#D4C8AF' }}>·</span>
           <a href="/dashboard/qr" style={{ color: '#8B3A2E', textDecoration: 'none' }}>Issue guest QR</a>
-        </nav>
+          <span style={{ color: '#D4C8AF' }}>·</span>
+          <a href="/dashboard/statement" style={{ color: '#8B3A2E', textDecoration: 'none' }}>Monthly statement</a>
+        </nav>}
       </div>
       <div className={styles.headerRight}>
         <span className={`${styles.chip} ${WINDOW_TONE[summary.windowState]}`}>
@@ -61,6 +65,7 @@ export function HeaderRail({
         <span className={styles.liveText}>
           Live · {lastPing ? `updated ${timeAgo(lastPing)}` : 'awaiting first order'}
         </span>
+        {!kiosk && (
         <a
           href="/dashboard/logout"
           style={{
@@ -72,6 +77,7 @@ export function HeaderRail({
         >
           Sign out
         </a>
+        )}
       </div>
     </header>
   );
