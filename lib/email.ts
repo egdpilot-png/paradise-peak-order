@@ -4,8 +4,8 @@
 //
 // Env:
 //   RESEND_API_KEY        — from resend.com (domain piratebynight.com verified)
-//   EMAIL_FROM            — default "Dinner at the Peak <dinner@piratebynight.com>"
-//   EMAIL_REPLY_TO        — default contact@sasallen.com (Pirate by Night)
+//   EMAIL_FROM            — default "Dinner at the Peak <contact@piratebynight.com>"
+//   EMAIL_REPLY_TO        — default contact@piratebynight.com (Pirate by Night)
 //   PARADISE_PEAK_EMAIL   — default contact@theparadisepeak.com (shown in footer)
 //   PARADISE_PEAK_CC      — set to "true" to cc Paradise Peak on bookings/cancellations
 //                           (off until the service is tested end to end)
@@ -15,8 +15,8 @@ import { sbService } from './supabase';
 import type { Guest, Menu, Order } from './types';
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://menu.piratebynight.com';
-const FROM = process.env.EMAIL_FROM || 'Dinner at the Peak <dinner@piratebynight.com>';
-const REPLY_TO = process.env.EMAIL_REPLY_TO || 'contact@sasallen.com';
+const FROM = process.env.EMAIL_FROM || 'Dinner at the Peak <contact@piratebynight.com>';
+const REPLY_TO = process.env.EMAIL_REPLY_TO || 'contact@piratebynight.com';
 export const PARADISE_PEAK_EMAIL = process.env.PARADISE_PEAK_EMAIL || 'contact@theparadisepeak.com';
 // Copy Paradise Peak only once explicitly enabled — test phase sends to the guest alone.
 const PARTNER_CC: string[] | undefined = process.env.PARADISE_PEAK_CC === 'true' ? [PARADISE_PEAK_EMAIL] : undefined;

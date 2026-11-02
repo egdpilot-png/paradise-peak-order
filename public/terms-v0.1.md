@@ -82,14 +82,14 @@ Items marked **[DECISION]** need a yes/no or a figure from Eugene, Hugh or Thess
 ### 10. Personal data
 
 10.1 Data collected (name, contact details, stay dates, dietary information, order history) is used only to provide the dinner service and is kept for the duration of the stay plus the legal accounting retention period.
-10.2 Data is hosted in the European Union (Supabase) and payment data by Stripe. Guests may ask for access, correction or deletion by writing to **contact@sasallen.com [DECISION: confirm address]**.
+10.2 Data is hosted in the European Union (Supabase) and payment data by Stripe. Guests may ask for access, correction or deletion by writing to contact@piratebynight.com.
 10.3 Guests consent to receive service messages (confirmation, 10:30 format notice, receipt, reminders) by email and WhatsApp for the duration of their stay. No marketing messages are sent without separate consent.
 
 ### 11. General
 
 11.1 By confirming a booking, the guest accepts these conditions, which are shown in English and French at booking.
 11.2 These conditions are governed by French law. The Collectivité of Saint-Martin's consumer mediation rules apply; the competent courts are those of Saint-Martin.
-11.3 SAS ALLEN — trade name Pirate by Night — Grand Case, 97150 Saint-Martin — SIREN **[DECISION: insert]** — contact@sasallen.com.
+11.3 SAS ALLEN — trade name Pirate by Night — Grand Case, 97150 Saint-Martin — SIREN **[DECISION: insert]** — contact@piratebynight.com.
 11.4 Questions about the villa booking or the stay itself go to The Paradise Peak: contact@theparadisepeak.com. Questions about dinner go to Pirate by Night.
 
 ### Summary card for guests (to print or display next to the QR)
@@ -178,14 +178,14 @@ Items marked **[DECISION]** need a yes/no or a figure from Eugene, Hugh or Thess
 ### 10. Données personnelles
 
 10.1 Les données collectées (identité, coordonnées, dates de séjour, informations alimentaires, historique des commandes) servent uniquement à la fourniture du service et sont conservées pendant le séjour puis pendant la durée légale de conservation comptable.
-10.2 Les données sont hébergées dans l'Union européenne (Supabase) et les données de paiement par Stripe. L'hôte peut demander l'accès, la rectification ou la suppression de ses données en écrivant à **contact@sasallen.com [DÉCISION : confirmer l'adresse]**.
+10.2 Les données sont hébergées dans l'Union européenne (Supabase) et les données de paiement par Stripe. L'hôte peut demander l'accès, la rectification ou la suppression de ses données en écrivant à contact@piratebynight.com.
 10.3 L'hôte accepte de recevoir les messages de service (confirmation, avis de formule à 10 h 30, reçu, rappels) par e-mail et WhatsApp pendant la durée de son séjour. Aucun message commercial n'est envoyé sans consentement distinct.
 
 ### 11. Dispositions générales
 
 11.1 En confirmant une réservation, l'hôte accepte les présentes conditions, présentées en anglais et en français lors de la réservation.
 11.2 Les présentes conditions sont soumises au droit français. Les règles de médiation de la consommation applicables à la Collectivité de Saint-Martin s'appliquent ; les tribunaux compétents sont ceux de Saint-Martin.
-11.3 SAS ALLEN — nom commercial Pirate by Night — Grand Case, 97150 Saint-Martin — SIREN **[DÉCISION : à compléter]** — contact@sasallen.com.
+11.3 SAS ALLEN — nom commercial Pirate by Night — Grand Case, 97150 Saint-Martin — SIREN **[DÉCISION : à compléter]** — contact@piratebynight.com.
 11.4 Les questions relatives à la réservation de la villa ou au séjour s'adressent à The Paradise Peak : contact@theparadisepeak.com. Les questions relatives au dîner s'adressent à Pirate by Night.
 
 ### Fiche résumé pour les hôtes (à imprimer ou afficher près du QR code)
