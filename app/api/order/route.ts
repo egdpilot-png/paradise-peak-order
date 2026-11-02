@@ -20,6 +20,16 @@ export async function POST(req: Request) {
   if (!menuId || !serviceDate || !coverCount) return NextResponse.json({ error: 'missing fields' }, { status: 400 });
   if (typeof coverCount !== 'number' || coverCount < 1 || coverCount > 8) return NextResponse.json({ error: 'invalid cover_count' }, { status: 400 });
   if (!Array.isArray(choices)) return NextResponse.json({ error: 'invalid choices' }, { status: 400 });
+  const seen = new Set<string>();
+  for (const c of choices) {
+    if (!c || typeof c.menuItemId !== 'string' || typeof c.course !== 'string') return NextResponse.json({ error: 'invalid choice' }, { status: 400 });
+    const seat = c.seat ?? 1;
+    if (!Number.isInteger(seat) || seat < 1 || seat > coverCount) return NextResponse.json({ error: 'seat outside party' }, { status: 400 });
+    const key = `${seat}:${c.course}`;
+    if (seen.has(key)) return NextResponse.json({ error: 'duplicate course for a seat' }, { status: 400 });
+    seen.add(key);
+    if (c.note != null && (typeof c.note !== 'string' || c.note.length > 200)) return NextResponse.json({ error: 'note too long' }, { status: 400 });
+  }
   if (nightKind(serviceDate) === 'closed') return NextResponse.json({ error: 'no service on this date' }, { status: 409 });
   if (!isOrderingOpen(serviceDate)) return NextResponse.json({ error: 'ordering window has closed for this date' }, { status: 409 });
 

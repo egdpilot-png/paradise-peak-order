@@ -91,7 +91,7 @@ export interface RoomRow {
   order_ref: string | null;
   order_id: string | null;
   cover_count: number | null;
-  courses: { course: CourseType; dish_name: string }[];
+  courses: { course: CourseType; dish_name: string; qty?: number; seats?: number[]; notes?: string | null }[];
   notes: string | null;
   last_updated: string | null;
 }
@@ -272,7 +272,7 @@ export async function buildWhatsAppDigest(date: string): Promise<string> {
 
   const submitted = rooms.filter(r => r.status === 'submitted' || r.status === 'buffet_confirmed');
   for (const r of submitted) {
-    const dishes = r.courses.map(c => c.dish_name).join(' · ');
+    const dishes = r.courses.map(c => (c.qty && c.qty > 1 ? `${c.qty}× ` : '') + c.dish_name + (c.notes ? ` (${c.notes})` : '')).join(' · ');
     const flags = r.dietary_flags.length ? ` (${r.dietary_flags.join(', ')})` : '';
     lines.push(`*Room ${r.room}* × ${r.cover_count}${flags}`);
     if (dishes) lines.push(`  ${dishes}`);

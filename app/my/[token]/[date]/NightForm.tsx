@@ -2,7 +2,7 @@
 
 // Booking form for one night. Handles both formats:
 //   buffet → covers only, flat price per adult
-//   plated → one dish per course, priced per dish, × covers
+//   plated → each person in the party picks their own starter / main / dessert
 
 import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
@@ -47,42 +47,75 @@ export function NightForm({ token, menu, guest, existing, canEdit, lang }: Props
   const isBuffet = menu.service_type === 'buffet';
   const coverPrice = menu.cover_price_cents ?? BUFFET_PRICE_CENTS;
 
-  const [selection, setSelection] = useState<Record<Course, string | null>>(() => {
-    const init: Record<string, string | null> = { starter: null, main: null, dessert: null };
-    for (const c of COURSES) {
-      const def = menu.items.find((i) => i.course === c.key && i.is_default && !itemBlockedByGuest(i, guest));
-      if (def) init[c.key] = def.id;
-    }
-    if (existing) for (const oi of existing.items) init[oi.course] = oi.menu_item_id;
-    return init as Record<Course, string | null>;
-  });
-  const [coverCount, setCoverCount] = useState(existing?.cover_count ?? guest.party_size ?? 2);
-  const [notes, setNotes] = useState(existing?.notes ?? '');
-  const [error, setError] = useState<string | null>(null);
-  const [done, setDone] = useState<Order | null>(null);
-
   const itemsByCourse = useMemo(() => {
     const map: Record<Course, MenuItem[]> = { starter: [], main: [], dessert: [], side: [], amuse: [] };
     for (const it of menu.items) if (!itemBlockedByGuest(it, guest)) map[it.course].push(it);
     return map;
   }, [menu.items, guest]);
 
-  const perCover = isBuffet
-    ? coverPrice
-    : COURSES.reduce((acc, c) => {
-        const it = menu.items.find((i) => i.id === selection[c.key]);
-        return acc + (it?.price_cents ?? 0);
-      }, 0);
-  const total = perCover * coverCount;
+
+  type Seat = Record<Course, string | null>;
+  const emptySeat = (): Seat => ({ starter: null, main: null, dessert: null, side: null, amuse: null });
+
+  const [coverCount, setCoverCountRaw] = useState(existing?.cover_count ?? guest.party_size ?? 2);
+  const [seats, setSeats] = useState<Seat[]>(() => {
+    const n = existing?.cover_count ?? guest.party_size ?? 2;
+    const arr: Seat[] = Array.from({ length: n }, emptySeat);
+    if (existing) {
+      for (const oi of existing.items) {
+        const idx = Math.max(1, Math.min(n, oi.seat ?? 1)) - 1;
+        arr[idx][oi.course] = oi.menu_item_id;
+      }
+      // Legacy orders stored one line for the whole party: mirror seat 1 to the others.
+      if (existing.items.every((oi) => (oi.seat ?? 1) === 1)) for (let i = 1; i < n; i++) arr[i] = { ...arr[0] };
+    }
+    return arr;
+  });
+  const [activeSeat, setActiveSeat] = useState(0);
+  const [seatNotes, setSeatNotes] = useState<string[]>(() => {
+    const n = existing?.cover_count ?? guest.party_size ?? 2;
+    const arr = Array.from({ length: n }, () => '');
+    if (existing) for (const oi of existing.items) if (oi.guest_note) arr[Math.max(1, Math.min(n, oi.seat ?? 1)) - 1] = oi.guest_note;
+    return arr;
+  });
+
+  function setCoverCount(n: number) {
+    n = Math.min(8, Math.max(1, n));
+    setCoverCountRaw(n);
+    setSeats((prev) => {
+      const next = prev.slice(0, n);
+      while (next.length < n) next.push(emptySeat());
+      return next;
+    });
+    setSeatNotes((prev) => { const next = prev.slice(0, n); while (next.length < n) next.push(''); return next; });
+    setActiveSeat((a) => Math.min(a, n - 1));
+  }
+
+  function choose(seatIdx: number, course: Course, itemId: string) {
+    setSeats((prev) => prev.map((st, i) => (i === seatIdx ? { ...st, [course]: itemId } : st)));
+  }
+
+  function copySeat(from: number, to: number) {
+    setSeats((prev) => prev.map((st, i) => (i === to ? { ...prev[from] } : st)));
+  }
+
+  const seatComplete = (st: Seat) => COURSES.every((c) => itemsByCourse[c.key].length === 0 || !!st[c.key]);
+  const [notes, setNotes] = useState(existing?.notes ?? '');
+  const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState<Order | null>(null);
+
+  const seatTotal = (st: Seat) =>
+    COURSES.reduce((acc, c) => acc + (menu.items.find((i) => i.id === st[c.key])?.price_cents ?? 0), 0);
+  const total = isBuffet ? coverPrice * coverCount : seats.reduce((acc, st) => acc + seatTotal(st), 0);
 
   function submit() {
     setError(null);
     if (!isBuffet) {
-      for (const c of COURSES) {
-        if (itemsByCourse[c.key].length > 0 && !selection[c.key]) {
-          setError(t('Please choose a dish for each course.', 'Merci de choisir un plat pour chaque service.'));
-          return;
-        }
+      const missing = seats.findIndex((st) => !seatComplete(st));
+      if (missing >= 0) {
+        setActiveSeat(missing);
+        setError(t(`Guest ${missing + 1} still needs a dish for each course.`, `Il manque un plat pour le convive ${missing + 1}.`));
+        return;
       }
     }
     startTransition(async () => {
@@ -95,7 +128,14 @@ export function NightForm({ token, menu, guest, existing, canEdit, lang }: Props
           serviceDate: menu.service_date,
           coverCount,
           notes: notes.trim() || null,
-          choices: isBuffet ? [] : COURSES.filter((c) => selection[c.key]).map((c) => ({ menuItemId: selection[c.key], course: c.key })),
+          choices: isBuffet
+            ? []
+            : seats.flatMap((st, idx) =>
+                COURSES.filter((c) => st[c.key]).map((c) => ({
+                  menuItemId: st[c.key], course: c.key, seat: idx + 1,
+                  note: c.key === 'main' ? (seatNotes[idx].trim() || null) : null,
+                })),
+              ),
         }),
       });
       if (!res.ok) {
@@ -181,40 +221,98 @@ export function NightForm({ token, menu, guest, existing, canEdit, lang }: Props
           <p className={styles.finePrint}>{formatEuro(coverPrice, lang)} {t('per adult, all included except drinks.', 'par adulte, tout compris sauf boissons.')}</p>
         </section>
       ) : (
-        COURSES.map((c) => itemsByCourse[c.key].length > 0 && (
-          <section key={c.key} className={styles.course}>
-            <h2 className={styles.courseTitle}>{lang === 'fr' ? c.label_fr : c.label}</h2>
-            <div className={styles.choices}>
-              {itemsByCourse[c.key].map((item) => {
-                const selected = selection[c.key] === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    disabled={!canEdit}
-                    className={selected ? styles.choiceSelected : styles.choice}
-                    onClick={() => setSelection((s) => ({ ...s, [c.key]: item.id }))}
-                    aria-pressed={selected}
-                  >
-                    <span className={styles.choiceName}>{lang === 'fr' && item.name_fr ? item.name_fr : item.name}</span>
-                    {item.description && <span className={styles.choiceDesc}>{lang === 'fr' && item.description_fr ? item.description_fr : item.description}</span>}
-                    {item.allergens.length > 0 && <span className={styles.choiceAllergens}>{item.allergens.join(' · ')}</span>}
-                    {item.price_cents != null && <span className={styles.choicePrice}>{formatEuro(item.price_cents, lang)}</span>}
-                  </button>
-                );
-              })}
-            </div>
+        <>
+          <section className={styles.course} style={{ marginBottom: 24 }}>
+            <label className={styles.field}>
+              <span>{t('Adults dining', 'Adultes à table')}</span>
+              <input type="number" min={1} max={8} value={coverCount} disabled={!canEdit} onChange={(e) => setCoverCount(Number(e.target.value))} />
+            </label>
+            <p className={styles.finePrint} style={{ marginTop: 8 }}>
+              {t('Each guest chooses their own starter, main and dessert.', 'Chaque convive choisit son entrée, son plat et son dessert.')}
+            </p>
           </section>
-        ))
+
+          <nav className={styles.seatTabs} aria-label={t('Guests', 'Convives')}>
+            {seats.map((st, idx) => (
+              <button
+                key={idx}
+                type="button"
+                className={idx === activeSeat ? styles.seatTabActive : styles.seatTab}
+                onClick={() => setActiveSeat(idx)}
+              >
+                <span>{t('Guest', 'Convive')} {idx + 1}</span>
+                <small>{seatComplete(st) ? formatEuro(seatTotal(st), lang) : t('to choose', 'à choisir')}</small>
+              </button>
+            ))}
+          </nav>
+
+          {activeSeat > 0 && canEdit && (
+            <p className={styles.finePrint} style={{ marginTop: -8, marginBottom: 20 }}>
+              <button type="button" className={styles.linkBtn} onClick={() => copySeat(0, activeSeat)}>
+                {t('Same as Guest 1', 'Comme le convive 1')}
+              </button>
+            </p>
+          )}
+
+          {COURSES.map((c) => itemsByCourse[c.key].length > 0 && (
+            <section key={`${activeSeat}-${c.key}`} className={styles.course}>
+              <h2 className={styles.courseTitle}>{lang === 'fr' ? c.label_fr : c.label}</h2>
+              <div className={styles.choices}>
+                {itemsByCourse[c.key].map((item) => {
+                  const selected = seats[activeSeat][c.key] === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      disabled={!canEdit}
+                      className={selected ? styles.choiceSelected : styles.choice}
+                      onClick={() => choose(activeSeat, c.key, item.id)}
+                      aria-pressed={selected}
+                    >
+                      <span className={styles.choiceName}>{lang === 'fr' && item.name_fr ? item.name_fr : item.name}</span>
+                      {item.description && <span className={styles.choiceDesc}>{lang === 'fr' && item.description_fr ? item.description_fr : item.description}</span>}
+                      {item.allergens.length > 0 && <span className={styles.choiceAllergens}>{item.allergens.join(' · ')}</span>}
+                      {item.price_cents != null && <span className={styles.choicePrice}>{formatEuro(item.price_cents, lang)}</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </section>
+          ))}
+
+          <section className={styles.course}>
+            <label className={styles.field}>
+              <span>{t(`Guest ${activeSeat + 1} · cooking or preference`, `Convive ${activeSeat + 1} · cuisson ou préférence`)}</span>
+              <input
+                type="text"
+                maxLength={200}
+                value={seatNotes[activeSeat]}
+                disabled={!canEdit}
+                onChange={(e) => setSeatNotes((prev) => prev.map((n, i) => (i === activeSeat ? e.target.value : n)))}
+                placeholder={t('e.g. medium rare, no cilantro', 'ex. à point, sans coriandre')}
+              />
+            </label>
+          </section>
+
+          {activeSeat < seats.length - 1 && (
+            <p className={styles.finePrint}>
+              <button type="button" className={styles.linkBtn} onClick={() => setActiveSeat(activeSeat + 1)}>
+                {t(`Next: Guest ${activeSeat + 2} →`, `Suivant : convive ${activeSeat + 2} →`)}
+              </button>
+            </p>
+          )}
+        </>
       )}
 
       <section className={styles.footerBlock}>
+        {isBuffet && (
+          <label className={styles.field}>
+            <span>{t('Adults dining', 'Adultes à table')}</span>
+            <input type="number" min={1} max={8} value={coverCount} disabled={!canEdit} onChange={(e) => setCoverCount(Number(e.target.value))} />
+          </label>
+        )}
         <label className={styles.field}>
-          <span>{t('Adults dining', 'Adultes à table')}</span>
-          <input type="number" min={1} max={8} value={coverCount} disabled={!canEdit} onChange={(e) => setCoverCount(Math.min(8, Math.max(1, Number(e.target.value))))} />
-        </label>
-        <label className={styles.field}>
-          <span>{t('A note for the chef?', 'Une note pour le chef ?')}</span>
+          <span>{t('A note for the table?', 'Une note pour la table ?')}</span>
           <textarea rows={3} value={notes} disabled={!canEdit} onChange={(e) => setNotes(e.target.value)}
             placeholder={t('Doneness, preferences, a celebration…', 'Cuisson, préférences, une occasion à fêter…')} />
         </label>
@@ -223,7 +321,16 @@ export function NightForm({ token, menu, guest, existing, canEdit, lang }: Props
           <span>{t('Total for this night', 'Total pour cette soirée')}</span>
           <span className={styles.price}>{formatEuro(total, lang)}</span>
         </div>
-        {!isBuffet && <p className={styles.finePrint}>{formatEuro(perCover, lang)} {t('per person × ', 'par personne × ')}{coverCount}</p>}
+        {!isBuffet && (
+          <ul className={styles.seatSummary}>
+            {seats.map((st, idx) => (
+              <li key={idx}>
+                <span>{t('Guest', 'Convive')} {idx + 1} · {COURSES.map((c) => menu.items.find((i) => i.id === st[c.key])).filter(Boolean).map((i) => (lang === 'fr' && i!.name_fr ? i!.name_fr : i!.name)).join(', ') || t('nothing chosen yet', 'rien de choisi')}</span>
+                <span>{formatEuro(seatTotal(st), lang)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
 
         {error && <p className={styles.error}>{error}</p>}
 

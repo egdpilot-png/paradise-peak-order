@@ -63,7 +63,10 @@ export function RoomStrip({ rooms, serviceType }: { rooms: RoomRow[]; serviceTyp
                   {r.courses.map((c, i) => (
                     <li key={i} className={styles.roomCourse}>
                       <span className={styles.roomCourseType}>{c.course}</span>
-                      <span className={styles.roomCourseDish}>{c.dish_name}</span>
+                      <span className={styles.roomCourseDish}>
+                        {c.qty && c.qty > 1 ? `${c.qty}× ` : ''}{c.dish_name}
+                        {c.notes ? <em style={{ color: '#8B867B' }}> — {c.notes}</em> : null}
+                      </span>
                     </li>
                   ))}
                 </ul>

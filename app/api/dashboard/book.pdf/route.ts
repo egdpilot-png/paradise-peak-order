@@ -85,7 +85,7 @@ export async function GET(req: Request) {
       const coursesHtml = (r.courses ?? []).length === 0
         ? '<div class="no-order">— no order submitted —</div>'
         : `<ul class="courses">` +
-          r.courses.map(c => `<li><span class="course-label">${esc(courseLabel(c.course))}</span> <span class="course-dish">${esc(c.dish_name)}</span></li>`).join('') +
+          r.courses.map(c => `<li><span class="course-label">${esc(courseLabel(c.course))}</span> <span class="course-dish">${c.qty && c.qty > 1 ? c.qty + '× ' : ''}${esc(c.dish_name)}${c.notes ? ' — ' + esc(c.notes) : ''}</span></li>`).join('') +
           `</ul>`;
 
       const flagsHtml = (r.dietary_flags ?? []).length > 0

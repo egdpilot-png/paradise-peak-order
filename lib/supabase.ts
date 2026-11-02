@@ -103,7 +103,8 @@ interface SubmitOrderInput {
   serviceDate: string;
   coverCount: number;
   notes?: string;
-  choices: { menuItemId: string; course: string }[];
+  // One entry per person × course. `seat` is 1-based; omitted seat = 1.
+  choices: { menuItemId: string; course: string; seat?: number; note?: string | null }[];
   entryChannel?: 'guest_qr' | 'staff_tablet' | 'whatsapp';
 }
 
@@ -158,17 +159,20 @@ export async function upsertOrder(input: SubmitOrderInput): Promise<Order> {
   }
 
   if (input.choices.length > 0) {
-    await svc.from('order_items').insert(
+    const { error: iErr } = await svc.from('order_items').insert(
       input.choices.map((c) => ({
         order_id: orderId,
         menu_item_id: c.menuItemId,
         course: c.course,
-        quantity: input.coverCount,
+        seat: c.seat ?? 1,
+        quantity: 1,
+        guest_note: c.note?.trim() || null,
       })),
     );
+    if (iErr) throw iErr;
   }
 
-  // Price the order: buffet = flat cover price × covers; plated = Σ dish prices × covers.
+  // Price the order: buffet = flat cover price × covers; plated = Σ of every chosen plate.
   const total = await computeOrderTotal(input.menuId, input.coverCount, input.choices.map((c) => c.menuItemId));
   await svc.from('orders').update({ total_cents: total }).eq('id', orderId);
 
@@ -183,9 +187,11 @@ export async function computeOrderTotal(menuId: string, covers: number, menuItem
   if (!menu) return 0;
   if (menu.service_type === 'buffet') return (menu.cover_price_cents ?? 0) * covers;
   if (menuItemIds.length === 0) return 0;
-  const { data: items } = await svc.from('menu_items').select('id, price_cents').in('id', menuItemIds);
-  const perCover = (items ?? []).reduce((acc: number, it: any) => acc + (it.price_cents ?? 0), 0);
-  return perCover * covers;
+  // menuItemIds may repeat (two guests choosing the same dish): price each occurrence.
+  const unique = Array.from(new Set(menuItemIds));
+  const { data: items } = await svc.from('menu_items').select('id, price_cents').in('id', unique);
+  const price = new Map((items ?? []).map((it: any) => [it.id, it.price_cents ?? 0]));
+  return menuItemIds.reduce((acc, id) => acc + (price.get(id) ?? 0), 0);
 }
 
 export async function cancelOrder(orderId: string): Promise<void> {

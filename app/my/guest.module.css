@@ -303,3 +303,17 @@
 .back { display: inline-block; margin-bottom: 16px; color: var(--ink-soft); text-decoration: none; font-size: 0.9rem; }
 .back:hover { color: var(--brass); }
 .danger { color: #8a2d2d; background: none; border: none; font: inherit; text-decoration: underline; cursor: pointer; padding: 0; }
+
+/* per-guest selection */
+.seatTabs { display: flex; gap: 8px; overflow-x: auto; margin: 0 0 20px; padding-bottom: 4px; }
+.seatTab, .seatTabActive {
+  flex: 0 0 auto; display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  min-width: 108px; padding: 10px 14px; border-radius: 10px; border: 1px solid #D9CFBB;
+  background: #FFFDF8; font: inherit; cursor: pointer; color: #1C1A17; text-align: left;
+}
+.seatTab small, .seatTabActive small { font-size: 0.78rem; color: #8B867B; }
+.seatTabActive { background: #1C1A17; color: #F4EFE4; border-color: #1C1A17; }
+.seatTabActive small { color: #E2C285; }
+.linkBtn { background: none; border: none; padding: 0; font: inherit; color: #8A6420; text-decoration: underline; cursor: pointer; }
+.seatSummary { list-style: none; margin: 8px 0 16px; padding: 0; font-size: 0.9rem; color: #5a564e; }
+.seatSummary li { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px dashed #E2D9C6; }

@@ -101,6 +101,7 @@ export interface OrderItem {
   menu_item_id: string;
   course: Course;
   quantity: number;
+  seat: number;              // 1..cover_count — which person in the party
   guest_note: string | null;
 }
 
