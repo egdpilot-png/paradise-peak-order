@@ -6,7 +6,9 @@
 //   RESEND_API_KEY        — from resend.com (domain piratebynight.com verified)
 //   EMAIL_FROM            — default "Dinner at the Peak <dinner@piratebynight.com>"
 //   EMAIL_REPLY_TO        — default contact@sasallen.com (Pirate by Night)
-//   PARADISE_PEAK_EMAIL   — default contact@theparadisepeak.com (cc on bookings)
+//   PARADISE_PEAK_EMAIL   — default contact@theparadisepeak.com (shown in footer)
+//   PARADISE_PEAK_CC      — set to "true" to cc Paradise Peak on bookings/cancellations
+//                           (off until the service is tested end to end)
 //   NEXT_PUBLIC_APP_URL   — default https://menu.piratebynight.com
 
 import { sbService } from './supabase';
@@ -16,6 +18,8 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://menu.piratebynight.c
 const FROM = process.env.EMAIL_FROM || 'Dinner at the Peak <dinner@piratebynight.com>';
 const REPLY_TO = process.env.EMAIL_REPLY_TO || 'contact@sasallen.com';
 export const PARADISE_PEAK_EMAIL = process.env.PARADISE_PEAK_EMAIL || 'contact@theparadisepeak.com';
+// Copy Paradise Peak only once explicitly enabled — test phase sends to the guest alone.
+const PARTNER_CC: string[] | undefined = process.env.PARADISE_PEAK_CC === 'true' ? [PARADISE_PEAK_EMAIL] : undefined;
 
 type Lang = 'en' | 'fr';
 
@@ -134,7 +138,7 @@ ${order.notes ? `<p>Note: ${esc(order.notes)}</p>` : ''}
 <p>Change or cancel free of charge until <strong>10:00 on ${esc(date)}</strong>. After 10:00 the night is final and charged. If fewer than 4 covers are booked across the property that night, dinner is prepared by Pirate by Night and served by the Paradise Peak team; you are told by 10:30.</p>
 ${button(stayUrl, 'View or change')}`;
   const text = `${subject}\n${order.order_ref}\n${order.cover_count} × ${isBuffet ? 'buffet' : 'plated'} — ${eur(total)}\n${stayUrl}\n`;
-  return send({ to: guest.email, cc: [PARADISE_PEAK_EMAIL], subject, html: layout(lang, subject, html), text });
+  return send({ to: guest.email, cc: PARTNER_CC, subject, html: layout(lang, subject, html), text });
 }
 
 // -------------------- 3. Cancellation --------------------
@@ -147,5 +151,5 @@ export async function sendCancellationEmail(guest: Guest | null, serviceDate: st
   const html = lang === 'fr'
     ? `<p>Votre dîner du <strong>${esc(date)}</strong>${orderRef ? ` (réf. ${esc(orderRef)})` : ''} est annulé. Rien ne vous sera facturé pour cette soirée.</p><p>Vous pouvez réserver à nouveau jusqu'à 10h00 le jour même.</p>${button(stayUrl, 'Ma page')}`
     : `<p>Your dinner on <strong>${esc(date)}</strong>${orderRef ? ` (ref. ${esc(orderRef)})` : ''} is cancelled. Nothing will be charged for this night.</p><p>You can book again until 10:00 on the day.</p>${button(stayUrl, 'My page')}`;
-  return send({ to: guest.email, cc: [PARADISE_PEAK_EMAIL], subject, html: layout(lang, subject, html), text: `${subject}\n${stayUrl}\n` });
+  return send({ to: guest.email, cc: PARTNER_CC, subject, html: layout(lang, subject, html), text: `${subject}\n${stayUrl}\n` });
 }
