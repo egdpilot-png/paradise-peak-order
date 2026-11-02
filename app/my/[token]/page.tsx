@@ -58,10 +58,10 @@ export default async function StayPage({ params, searchParams }: Props) {
       {welcome && (
         <div className={styles.notice}>
           {t(
-            'You are registered. Keep this page: it is your personal link for the whole stay. We have also sent it to ',
-            'Votre inscription est enregistrée. Conservez cette page : c\u2019est votre lien personnel pour tout le séjour. Nous l\u2019avons aussi envoyé à ',
+            'You are registered. Bookmark this page or save the link: it is your personal page for the whole stay (registered email: ',
+            'Votre inscription est enregistrée. Ajoutez cette page à vos favoris ou conservez le lien : c\u2019est votre page personnelle pour tout le séjour (e-mail enregistré : ',
           )}
-          <strong>{guest.email}</strong>.
+          <strong>{guest.email}</strong>).
         </div>
       )}
 
