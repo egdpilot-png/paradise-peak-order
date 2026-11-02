@@ -11,11 +11,11 @@ import {
 } from '@/lib/time';
 import styles from '../guest.module.css';
 
-interface Props { params: Promise<{ token: string }>; searchParams: Promise<{ welcome?: string }> }
+interface Props { params: Promise<{ token: string }>; searchParams: Promise<{ welcome?: string; mail?: string }> }
 
 export default async function StayPage({ params, searchParams }: Props) {
   const { token } = await params;
-  const { welcome } = await searchParams;
+  const { welcome, mail } = await searchParams;
   const payload = verifyToken(token);
   if (!payload?.guest_id) redirect('/expired');
 
@@ -61,7 +61,10 @@ export default async function StayPage({ params, searchParams }: Props) {
             'You are registered. Bookmark this page or save the link: it is your personal page for the whole stay (registered email: ',
             'Votre inscription est enregistrée. Ajoutez cette page à vos favoris ou conservez le lien : c\u2019est votre page personnelle pour tout le séjour (e-mail enregistré : ',
           )}
-          <strong>{guest.email}</strong>).
+          <strong>{guest.email}</strong>).{' '}
+          {mail
+            ? t('We have emailed you this link.', 'Nous vous avons envoyé ce lien par e-mail.')
+            : t('Save this link now — no email is sent yet.', 'Conservez ce lien dès maintenant — aucun e-mail n\u2019est envoyé pour l\u2019instant.')}
         </div>
       )}
 

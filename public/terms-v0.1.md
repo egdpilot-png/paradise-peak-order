@@ -90,6 +90,7 @@ Items marked **[DECISION]** need a yes/no or a figure from Eugene, Hugh or Thess
 11.1 By confirming a booking, the guest accepts these conditions, which are shown in English and French at booking.
 11.2 These conditions are governed by French law. The Collectivité of Saint-Martin's consumer mediation rules apply; the competent courts are those of Saint-Martin.
 11.3 SAS ALLEN — trade name Pirate by Night — Grand Case, 97150 Saint-Martin — SIREN **[DECISION: insert]** — contact@sasallen.com.
+11.4 Questions about the villa booking or the stay itself go to The Paradise Peak: contact@theparadisepeak.com. Questions about dinner go to Pirate by Night.
 
 ### Summary card for guests (to print or display next to the QR)
 
@@ -185,6 +186,7 @@ Items marked **[DECISION]** need a yes/no or a figure from Eugene, Hugh or Thess
 11.1 En confirmant une réservation, l'hôte accepte les présentes conditions, présentées en anglais et en français lors de la réservation.
 11.2 Les présentes conditions sont soumises au droit français. Les règles de médiation de la consommation applicables à la Collectivité de Saint-Martin s'appliquent ; les tribunaux compétents sont ceux de Saint-Martin.
 11.3 SAS ALLEN — nom commercial Pirate by Night — Grand Case, 97150 Saint-Martin — SIREN **[DÉCISION : à compléter]** — contact@sasallen.com.
+11.4 Les questions relatives à la réservation de la villa ou au séjour s'adressent à The Paradise Peak : contact@theparadisepeak.com. Les questions relatives au dîner s'adressent à Pirate by Night.
 
 ### Fiche résumé pour les hôtes (à imprimer ou afficher près du QR code)
 

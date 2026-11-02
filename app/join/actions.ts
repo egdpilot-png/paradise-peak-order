@@ -4,6 +4,7 @@
 // confirmation email. Creates the guest row and issues a stay token.
 
 import { redirect } from 'next/navigation';
+import { sendWelcomeEmail } from '@/lib/email';
 import { sbService } from '@/lib/supabase';
 import { issueStayToken } from '@/lib/token';
 import { todayInMarigot } from '@/lib/time';
@@ -82,5 +83,10 @@ export async function registerGuest(_prev: JoinResult | null, formData: FormData
   }
 
   const token = issueStayToken(guestId, roomKey, checkOut);
-  redirect(`/my/${token}?welcome=1`);
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://menu.piratebynight.com';
+  const emailed = await sendWelcomeEmail(
+    { guest_name: name, email, language: lang, check_in: checkIn, check_out: checkOut, party_size: partySize } as any,
+    `${appUrl}/my/${token}`,
+  );
+  redirect(`/my/${token}?welcome=1${emailed ? '&mail=1' : ''}`);
 }

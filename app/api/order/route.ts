@@ -3,11 +3,14 @@
 // token, never from the body. Enforces the 10:00 window server-side.
 
 import { NextResponse } from 'next/server';
-import { upsertOrder, loadGuestById } from '@/lib/supabase';
+import { upsertOrder, loadGuestById, loadOrderForRoomDate } from '@/lib/supabase';
+import { sendBookingEmail } from '@/lib/email';
+import type { Guest } from '@/lib/types';
 import { isOrderingOpen, nightKind } from '@/lib/time';
 import { verifyToken } from '@/lib/token';
 
 export const runtime = 'nodejs';
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://menu.piratebynight.com';
 
 export async function POST(req: Request) {
   let body: any;
@@ -36,8 +39,9 @@ export async function POST(req: Request) {
   // Resolve room + guest from the token
   let room = payload.room;
   let guestId: string | null = payload.guest_id ?? null;
+  let guest: Guest | null = null;
   if (guestId) {
-    const guest = await loadGuestById(guestId);
+    guest = await loadGuestById(guestId);
     if (!guest) return NextResponse.json({ error: 'unknown guest' }, { status: 401 });
     room = guest.room_number;
     if (guest.check_in && guest.check_out && (serviceDate < guest.check_in || serviceDate >= guest.check_out)) {
@@ -46,8 +50,11 @@ export async function POST(req: Request) {
   }
 
   try {
+    const before = await loadOrderForRoomDate(room, serviceDate);
     const order = await upsertOrder({ room, guestId, menuId, serviceDate, coverCount, notes, choices, entryChannel: 'guest_qr' });
-    return NextResponse.json({ ok: true, order });
+    // Confirmation to the guest (cc Paradise Peak). Best-effort, never blocks the booking.
+    const emailed = await sendBookingEmail(order, guest, `${APP_URL}/my/${encodeURIComponent(String(token))}`, before ? 'updated' : 'new');
+    return NextResponse.json({ ok: true, order, emailed });
   } catch (err: any) {
     return NextResponse.json({ error: 'failed to save order', detail: err?.message ?? String(err) }, { status: 500 });
   }
