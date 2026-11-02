@@ -221,6 +221,16 @@ export async function loadMenusBetween(from: string, to: string): Promise<Menu[]
 }
 
 /** All non-cancelled orders for a room between two dates (inclusive), with items. */
+export async function loadSkippedNights(guestId: string, from: string, to: string): Promise<Set<string>> {
+  const { data } = await sbService()
+    .from('guest_night_skips')
+    .select('service_date')
+    .eq('guest_id', guestId)
+    .gte('service_date', from)
+    .lte('service_date', to);
+  return new Set((data ?? []).map((r: any) => r.service_date as string));
+}
+
 export async function loadOrdersForRoomBetween(room: string, from: string, to: string): Promise<Order[]> {
   const svc = sbService();
   const { data: orders } = await svc

@@ -4,7 +4,8 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { verifyToken } from '@/lib/token';
-import { loadGuestById, loadMenusBetween, loadOrdersForRoomBetween } from '@/lib/supabase';
+import { loadGuestById, loadMenusBetween, loadOrdersForRoomBetween, loadSkippedNights } from '@/lib/supabase';
+import { NotDiningButton } from './NotDiningButton';
 import {
   addDays, datesBetween, formatEuro, nightKind, shortDate, todayInMarigot, windowState,
   BUFFET_PRICE_CENTS, MIN_COVERS_ONSITE,
@@ -30,9 +31,10 @@ export default async function StayPage({ params, searchParams }: Props) {
   const lastNight = addDays(guest.check_out, -1);
   const nights = datesBetween(from, guest.check_out);
 
-  const [menus, orders] = await Promise.all([
+  const [menus, orders, skipped] = await Promise.all([
     loadMenusBetween(from, lastNight),
     loadOrdersForRoomBetween(guest.room_number, from, lastNight),
+    loadSkippedNights(guest.id, from, lastNight),
   ]);
   const menuByDate = new Map(menus.map((m) => [m.service_date, m]));
   const orderByDate = new Map(orders.map((o) => [o.service_date, o]));
@@ -78,8 +80,8 @@ export default async function StayPage({ params, searchParams }: Props) {
         ) : (
           <p style={{ margin: 0 }} className={styles.lead}>
             {t(
-              'No card on file yet. You will be asked for one when you confirm your first night; nothing is charged before 10:00 on the day.',
-              'Aucune carte enregistrée. Elle vous sera demandée à la confirmation de votre première soirée ; rien n\u2019est prélevé avant 10 h le jour même.',
+              'Card payment is not active yet: your bookings confirm without a card for now. When it opens, the card is charged at 10:00 on each dinner day, never before.',
+              'Le paiement par carte n\u2019est pas encore actif : vos réservations sont confirmées sans carte pour le moment. À son ouverture, la carte sera débitée à 10 h le jour de chaque dîner, jamais avant.',
             )}
           </p>
         )}
@@ -113,8 +115,12 @@ export default async function StayPage({ params, searchParams }: Props) {
             let status: string;
             let statusClass = styles.nightStatus;
             let action: { label: string; solid: boolean } | null = null;
+            const isSkipped = skipped.has(date);
+            const canSkip = !order && state === 'open' && date >= today;
 
-            if (order) {
+            if (!order && isSkipped) {
+              status = t('No dinner this night — nothing is booked or charged.', 'Pas de dîner ce soir-là — rien n\u2019est réservé ni facturé.');
+            } else if (order) {
               statusClass = styles.nightStatusBooked;
               status = `${t('Booked', 'Réservé')} · ${order.cover_count} ${t('covers', 'couverts')} · ${formatEuro(order.total_cents ?? 0, lang)}`
                 + (order.status === 'locked' || !canEdit ? ` · ${t('final', 'définitif')}` : '');
@@ -136,8 +142,13 @@ export default async function StayPage({ params, searchParams }: Props) {
                   <div className={styles.nightDate}>{shortDate(date, lang)}</div>
                   <div className={styles.nightKind}>{kindLabel}</div>
                 </div>
-                {action ? (
-                  <Link href={href} className={`${styles.pill} ${action.solid ? styles.pillSolid : ''}`}>{action.label}</Link>
+                {isSkipped && !order ? (
+                  <NotDiningButton token={token} date={date} skipped lang={lang} />
+                ) : action ? (
+                  <span className={styles.nightActions}>
+                    {canSkip && <NotDiningButton token={token} date={date} skipped={false} lang={lang} />}
+                    <Link href={href} className={`${styles.pill} ${action.solid ? styles.pillSolid : ''}`}>{action.label}</Link>
+                  </span>
                 ) : <span />}
                 <span className={statusClass}>{status}</span>
               </div>

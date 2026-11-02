@@ -10,6 +10,7 @@ const STATUS_LABEL: Record<RoomStatus, string> = {
   pending: 'Draft',
   chefs_choice: "Chef's choice",
   late_window: 'Late window',
+  not_dining: 'Not dining',
   no_order: 'No order',
 };
 
@@ -19,6 +20,7 @@ const STATUS_TONE: Record<RoomStatus, string> = {
   pending: styles.toneWarn,
   chefs_choice: styles.tonePending,
   late_window: styles.toneWarn,
+  not_dining: styles.toneMuted,
   no_order: styles.toneCrit,
 };
 
@@ -77,6 +79,8 @@ export function RoomStrip({ rooms, serviceType }: { rooms: RoomRow[]; serviceTyp
                   <p className={styles.roomNote}>Chef's choice · {r.cover_count} covers</p>
                 ) : r.status === 'no_order' ? (
                   <p className={styles.roomNoteMuted}>Awaiting order</p>
+                ) : r.status === 'not_dining' ? (
+                  <p className={styles.roomNoteMuted}>Guest declared: not dining tonight</p>
                 ) : null
               )}
 

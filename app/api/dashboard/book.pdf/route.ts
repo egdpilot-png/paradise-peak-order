@@ -52,6 +52,7 @@ function statusLabel(s: string): string {
     pending: 'Pending',
     chefs_choice: "Chef's choice",
     late_window: 'Late window',
+    not_dining: 'Not dining',
     no_order: 'No order',
   };
   return map[s] ?? s;
@@ -305,6 +306,7 @@ export async function GET(req: Request) {
   .status-submitted { background: #EAF3E7; border-color: #B4CFA8; }
   .status-chefs_choice { background: #F3EDDA; border-color: #D6C58C; }
   .status-no_order { background: #F5E4E4; border-color: #D6A8A8; }
+  .status-not_dining { background: #EFEBE3; border-color: #CBBFA9; color: #6F6A60; }
 
   .guest-name {
     font-size: 18pt;

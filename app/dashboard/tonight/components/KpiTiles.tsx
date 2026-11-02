@@ -34,7 +34,7 @@ export function KpiTiles({ summary }: { summary: TonightSummary }) {
     {
       label: 'Awaiting order',
       value: summary.roomsMissing,
-      sub: summary.windowState === 'open' ? 'Ordering still open' : 'Follow up before 14:00',
+      sub: (summary.roomsNotDining ? `${summary.roomsNotDining} not dining · ` : '') + (summary.windowState === 'open' ? 'Ordering still open' : 'Follow up before 14:00'),
       tone: missingCritical ? 'warn' : 'default' as const,
     },
   ];

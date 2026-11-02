@@ -255,6 +255,7 @@
   gap: 6px 12px;
   align-items: center;
 }
+.nightActions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
 .nightClosed { opacity: 0.55; background: transparent; }
 .nightDate { font-weight: 600; font-size: 1.02rem; color: var(--ink); }
 .nightKind { font-size: 0.85rem; color: var(--ink-soft); letter-spacing: 0.02em; }
