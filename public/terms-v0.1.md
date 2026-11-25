@@ -24,11 +24,11 @@ Items marked **[DECISION]** need a yes/no or a figure from Eugene, Hugh or Thess
 | Wednesday | Fixed menu, plated | Sum of the dishes chosen |
 | Thursday | Fixed menu, plated | Sum of the dishes chosen |
 | Friday | Caribbean buffet | €55 |
-| Saturday | Fixed menu, plated | Sum of the dishes chosen |
+| Saturday | Pizza night, delivered from Sandy's Orange | Sum of the pizzas chosen |
 | Sunday | No dinner service | — |
 
 2.1 Prices are in euros, all taxes included, per adult.
-2.2 On plated nights the menu of the day is published in advance with a price per dish; a guest's bill is the total of the dishes they select for each cover.
+2.2 On plated nights the menu of the day is published in advance with a price per dish; a guest's bill is the total of the dishes they select for each cover. Side dishes listed on the menu of the day are served with the main course and included in its price. On Saturday each guest chooses a pizza; the bill is the total of the pizzas chosen.
 2.3 Drinks are not included unless stated on the menu of the day. **[DECISION: confirm]**
 2.4 Menus and prices may change from week to week; the price shown when the guest confirms a night is the price charged.
 
@@ -61,6 +61,7 @@ Items marked **[DECISION]** need a yes/no or a figure from Eugene, Hugh or Thess
 6.2 If the total at 10:00 is **fewer than 4**, dinner is prepared by Pirate by Night, delivered to the property and plated and served by The Paradise Peak team. The menu, dishes and price are unchanged. **[DECISION: same price, or a reduced service charge for delivered nights?]**
 6.3 Guests are informed by **10:30** which format applies to their night.
 6.4 **[DECISION]** If the format changes to delivered service, a guest may cancel without charge until 12:00 that day and the amount already charged is refunded. (Recommended: this is what makes the minimum fair to the guest.)
+6.5 Saturday pizza night is always delivered: pizzas are prepared at Sandy's Orange and brought to the property for 19:00, whatever the number of covers. Clauses 6.1 to 6.4 apply to buffet and plated nights only. **[DECISION: confirm]**
 
 ### 7. Allergies and dietary requirements
 
@@ -120,11 +121,11 @@ Items marked **[DECISION]** need a yes/no or a figure from Eugene, Hugh or Thess
 | Mercredi | Menu fixe, servi à l'assiette | Total des plats choisis |
 | Jeudi | Menu fixe, servi à l'assiette | Total des plats choisis |
 | Vendredi | Buffet caribéen | 55 € |
-| Samedi | Menu fixe, servi à l'assiette | Total des plats choisis |
+| Samedi | Soirée pizza, livrée par Sandy's Orange | Total des pizzas choisies |
 | Dimanche | Pas de service | — |
 
 2.1 Les prix sont en euros, toutes taxes comprises, par adulte.
-2.2 Les soirs à l'assiette, le menu du jour est publié à l'avance avec un prix par plat ; la note de l'hôte correspond au total des plats sélectionnés pour chaque couvert.
+2.2 Les soirs à l'assiette, le menu du jour est publié à l'avance avec un prix par plat ; la note de l'hôte correspond au total des plats sélectionnés pour chaque couvert. Les accompagnements indiqués au menu du jour sont servis avec le plat et compris dans son prix. Le samedi, chaque convive choisit une pizza ; la note correspond au total des pizzas choisies.
 2.3 Les boissons ne sont pas comprises, sauf mention sur le menu du jour. **[DÉCISION : confirmer]**
 2.4 Les menus et les prix peuvent varier d'une semaine à l'autre ; le prix affiché lors de la confirmation d'une soirée est le prix facturé.
 
@@ -157,6 +158,7 @@ Items marked **[DECISION]** need a yes/no or a figure from Eugene, Hugh or Thess
 6.2 Si le total à 10 h 00 est **inférieur à 4**, le dîner est préparé par Pirate by Night, livré à l'établissement puis dressé et servi par l'équipe de The Paradise Peak. Le menu, les plats et le prix restent inchangés. **[DÉCISION : même prix, ou frais de service réduits les soirs livrés ?]**
 6.3 Les hôtes sont informés avant **10 h 30** de la formule applicable à leur soirée.
 6.4 **[DÉCISION]** Si la formule passe en service livré, l'hôte peut annuler sans frais jusqu'à 12 h 00 le jour même et le montant déjà prélevé est remboursé. (Recommandé : c'est ce qui rend le minimum équitable pour l'hôte.)
+6.5 La soirée pizza du samedi est toujours livrée : les pizzas sont préparées chez Sandy's Orange et apportées à l'établissement pour 19 h 00, quel que soit le nombre de couverts. Les articles 6.1 à 6.4 s'appliquent uniquement aux soirs de buffet et de menu à l'assiette. **[DÉCISION : confirmer]**
 
 ### 7. Allergies et régimes
 

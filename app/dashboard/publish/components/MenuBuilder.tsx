@@ -4,7 +4,7 @@ import type { DishLibraryItem } from '@/lib/publisher';
 import type { CourseType } from '@/lib/types';
 import styles from '../publisher.module.css';
 
-const PLATED_COURSES: CourseType[] = ['starter', 'main', 'dessert'];
+const PLATED_COURSES: CourseType[] = ['starter', 'main', 'side', 'dessert'];
 const BUFFET_COURSES: CourseType[] = ['starter', 'main', 'side', 'dessert'];
 const COURSE_LABEL: Record<CourseType, string> = {
   amuse: 'Amuse', starter: 'Starter', main: 'Main', side: 'Side', dessert: 'Dessert',

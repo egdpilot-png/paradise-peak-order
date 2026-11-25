@@ -1,7 +1,7 @@
 'use client';
 
 // Week builder: one menu per service night, Monday to Saturday.
-// Monday + Friday = buffet (cover price per person); Tue/Wed/Thu/Sat = plated
+// Monday + Friday = buffet (cover price per person); Tue/Wed/Thu = plated; Sat = pizza night (mains only)
 // fixed menu priced by dish. Sunday is closed.
 
 import { useMemo, useState, useTransition } from 'react';
@@ -9,7 +9,7 @@ import { useRouter } from 'next/navigation';
 import type { DashboardUser } from '@/lib/auth';
 import type { WeekContext, DishLibraryItem, MenuDraft, LoadedMenu } from '@/lib/publisher';
 import type { CourseType } from '@/lib/types';
-import { nightKind, BUFFET_PRICE_CENTS, SEASON_END_DEFAULT } from '@/lib/time';
+import { nightKind, isPizzaNight, BUFFET_PRICE_CENTS, SEASON_END_DEFAULT } from '@/lib/time';
 import { DishLibrary } from './components/DishLibrary';
 import { MenuBuilder } from './components/MenuBuilder';
 import { GuestPreview } from './components/GuestPreview';
@@ -47,12 +47,13 @@ const shortLabel = (iso: string) =>
 function seedFrom(loaded: LoadedMenu | null, date: string): BuilderState {
   const kind = nightKind(date);
   const type: BuilderState['service_type'] = kind === 'buffet' ? 'buffet' : 'plated';
+  const pizza = isPizzaNight(date);
   const defaultTitle = kind === 'buffet'
     ? `Buffet Pirate at Night · ${dayName(date)}`
-    : `Menu Pirate at Night · ${dayName(date)}`;
+    : pizza ? `Pizza Night · ${dayName(date)}` : `Menu Pirate at Night · ${dayName(date)}`;
   const defaultTitleFr = kind === 'buffet'
     ? `Buffet Pirate at Night · ${DAY_FULL_FR[weekdayIdx(date)]}`
-    : `Menu Pirate at Night · ${DAY_FULL_FR[weekdayIdx(date)]}`;
+    : pizza ? `Soirée pizza · ${DAY_FULL_FR[weekdayIdx(date)]}` : `Menu Pirate at Night · ${DAY_FULL_FR[weekdayIdx(date)]}`;
 
   if (!loaded) {
     return {
@@ -111,8 +112,8 @@ export function PublisherEditor({ context }: Props) {
   // course to be one of the fixed-menu courses.
   function addDish(date: string, dish: DishLibraryItem) {
     const b = days[date];
-    if (b.service_type === 'plated' && !['starter', 'main', 'dessert'].includes(dish.course)) {
-      setStatus(`"${dish.name}" is a ${dish.course} — plated nights use starter, main and dessert only.`);
+    if (b.service_type === 'plated' && !['starter', 'main', 'side', 'dessert'].includes(dish.course)) {
+      setStatus(`"${dish.name}" is a ${dish.course} — plated nights use starter, main, side and dessert only.`);
       return;
     }
     updateDay(date, (s) => ({
@@ -201,9 +202,11 @@ export function PublisherEditor({ context }: Props) {
       if (!b.cover_price_cents || b.cover_price_cents <= 0) return `${label} (buffet) needs a price per person.`;
       return null;
     }
-    if (b.items.starter.length === 0) return `${label} needs at least one starter.`;
-    if (b.items.main.length === 0) return `${label} needs at least one main.`;
-    if (b.items.dessert.length === 0) return `${label} needs at least one dessert.`;
+    // Saturday is pizza night: one pizza per guest, no starter or dessert required.
+    const pizza = isPizzaNight(b.service_date);
+    if (!pizza && b.items.starter.length === 0) return `${label} needs at least one starter.`;
+    if (b.items.main.length === 0) return `${label} needs at least one ${pizza ? 'pizza (course: main)' : 'main'}.`;
+    if (!pizza && b.items.dessert.length === 0) return `${label} needs at least one dessert.`;
     const unpriced = (['starter', 'main', 'dessert'] as CourseType[])
       .flatMap(c => b.items[c]).map(id => dishById.get(id)).filter(d => d && d.price_eur == null);
     if (unpriced.length) return `${label}: set a price for ${unpriced.map(d => d!.name).join(', ')}.`;

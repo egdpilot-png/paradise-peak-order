@@ -85,12 +85,12 @@ export async function sendWelcomeEmail(guest: Pick<Guest, 'guest_name' | 'email'
 <p>Vous êtes inscrit(e) au service de dîner de The Paradise Peak${dates ? ` pour votre séjour du ${esc(dates)}` : ''}${guest.party_size ? `, ${guest.party_size} adulte(s)` : ''}.</p>
 <p>Voici votre page personnelle. Elle liste chaque soir de votre séjour : réservez, modifiez ou annulez jusqu'à <strong>10h00 le jour même</strong>.</p>
 ${button(stayUrl, 'Ouvrir ma page')}
-<p>Lundi et vendredi : buffet (55 € par personne). Mardi, mercredi, jeudi, samedi : menu servi à l'assiette, chaque convive choisit ses plats. Dimanche : pas de service. Dîner à partir de 19h00.</p>`
+<p>Lundi et vendredi : buffet (55 € par personne). Mardi, mercredi, jeudi : menu servi à l'assiette, chaque convive choisit ses plats. Samedi : soirée pizza, chaque convive choisit sa pizza. Dimanche : pas de service. Dîner à partir de 19h00.</p>`
     : `<p>Hello ${esc(first)},</p>
 <p>You are registered for dinner at The Paradise Peak${dates ? ` for your stay ${esc(dates)}` : ''}${guest.party_size ? `, ${guest.party_size} adult(s)` : ''}.</p>
 <p>This is your personal page. It lists every night of your stay: book, change or cancel until <strong>10:00 on the day</strong>.</p>
 ${button(stayUrl, 'Open my page')}
-<p>Monday and Friday: buffet (€55 per person). Tuesday, Wednesday, Thursday, Saturday: plated menu, each guest picks their own courses. Sunday: no service. Dinner from 19:00.</p>`;
+<p>Monday and Friday: buffet (€55 per person). Tuesday, Wednesday, Thursday: plated menu, each guest picks their own courses. Saturday: pizza night, each guest picks their own pizza. Sunday: no service. Dinner from 19:00.</p>`;
   const text = `${subject}\n\n${stayUrl}\n`;
   return send({ to: guest.email, subject, html: layout(lang, subject, html), text });
 }

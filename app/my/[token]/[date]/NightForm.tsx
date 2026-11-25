@@ -7,7 +7,7 @@
 import { useMemo, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Menu, MenuItem, Guest, Course, DietaryFlag, Order } from '@/lib/types';
-import { formatServiceDate, formatEuro, BUFFET_PRICE_CENTS } from '@/lib/time';
+import { formatServiceDate, formatEuro, isPizzaNight, BUFFET_PRICE_CENTS } from '@/lib/time';
 import styles from '../../guest.module.css';
 
 interface Props {
@@ -45,6 +45,7 @@ export function NightForm({ token, menu, guest, existing, canEdit, lang }: Props
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const isBuffet = menu.service_type === 'buffet';
+  const isPizza = !isBuffet && isPizzaNight(menu.service_date);
   const coverPrice = menu.cover_price_cents ?? BUFFET_PRICE_CENTS;
 
   const itemsByCourse = useMemo(() => {
@@ -53,6 +54,9 @@ export function NightForm({ token, menu, guest, existing, canEdit, lang }: Props
     return map;
   }, [menu.items, guest]);
 
+
+  // Sides are not chosen: they come with the main course (shown for information).
+  const sides = useMemo(() => menu.items.filter((it) => it.course === 'side'), [menu.items]);
 
   type Seat = Record<Course, string | null>;
   const emptySeat = (): Seat => ({ starter: null, main: null, dessert: null, side: null, amuse: null });
@@ -228,7 +232,9 @@ export function NightForm({ token, menu, guest, existing, canEdit, lang }: Props
               <input type="number" min={1} max={8} value={coverCount} disabled={!canEdit} onChange={(e) => setCoverCount(Number(e.target.value))} />
             </label>
             <p className={styles.finePrint} style={{ marginTop: 8 }}>
-              {t('Each guest chooses their own starter, main and dessert.', 'Chaque convive choisit son entrée, son plat et son dessert.')}
+              {isPizza
+                ? t('Each guest chooses their own pizza. Pizzas are delivered from Sandy\u2019s Orange for 19:00.', 'Chaque convive choisit sa pizza. Les pizzas sont livrées par Sandy\u2019s Orange pour 19 h.')
+                : t('Each guest chooses their own starter, main and dessert.', 'Chaque convive choisit son entrée, son plat et son dessert.')}
             </p>
           </section>
 
@@ -256,7 +262,7 @@ export function NightForm({ token, menu, guest, existing, canEdit, lang }: Props
 
           {COURSES.map((c) => itemsByCourse[c.key].length > 0 && (
             <section key={`${activeSeat}-${c.key}`} className={styles.course}>
-              <h2 className={styles.courseTitle}>{lang === 'fr' ? c.label_fr : c.label}</h2>
+              <h2 className={styles.courseTitle}>{isPizza && c.key === 'main' ? t('Your pizza', 'Votre pizza') : lang === 'fr' ? c.label_fr : c.label}</h2>
               <div className={styles.choices}>
                 {itemsByCourse[c.key].map((item) => {
                   const selected = seats[activeSeat][c.key] === item.id;
@@ -279,6 +285,22 @@ export function NightForm({ token, menu, guest, existing, canEdit, lang }: Props
               </div>
             </section>
           ))}
+
+          {sides.length > 0 && (
+            <section className={styles.course}>
+              <h2 className={styles.courseTitle}>{t('Served with', 'Accompagnements')}</h2>
+              <div className={styles.choices}>
+                {sides.map((item) => (
+                  <div key={item.id} className={styles.choice} style={{ cursor: 'default' }}>
+                    <span className={styles.choiceName}>{lang === 'fr' && item.name_fr ? item.name_fr : item.name}</span>
+                    {item.description && <span className={styles.choiceDesc}>{lang === 'fr' && item.description_fr ? item.description_fr : item.description}</span>}
+                    {item.allergens.length > 0 && <span className={styles.choiceAllergens}>{item.allergens.join(' · ')}</span>}
+                  </div>
+                ))}
+              </div>
+              <p className={styles.finePrint}>{t('Sides are served with the main course and included in its price.', 'Les accompagnements sont servis avec le plat et compris dans son prix.')}</p>
+            </section>
+          )}
 
           <section className={styles.course}>
             <label className={styles.field}>

@@ -19,7 +19,7 @@ interface Props {
   dishById: Map<string, DishLibraryItem>;
 }
 
-const PLATED: CourseType[] = ['starter', 'main', 'dessert'];
+const PLATED: CourseType[] = ['starter', 'main', 'side', 'dessert'];
 const BUFFET: CourseType[] = ['starter', 'main', 'side', 'dessert'];
 const COURSE_LABEL: Record<CourseType, string> = {
   amuse: 'To awaken', starter: 'To begin', main: 'Main course', side: 'On the side', dessert: 'To finish',

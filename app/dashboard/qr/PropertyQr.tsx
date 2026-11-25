@@ -34,7 +34,7 @@ export function PropertyQr({ qrDataUrl, emailQrDataUrl, joinUrl, emailUrl }: {
       <img src="${qrDataUrl}" alt="QR" />
       <div class="url">${joinUrl.replace('https://', '')}</div>
       <div class="rules">
-        <p><b>Scan to register and book your nights.</b> Monday &amp; Friday: Caribbean buffet €55 pp. Tue–Sat: fixed menu of the day, plated, priced per dish. Served from 19:00. Change or cancel free until 10:00 on the day.</p>
+        <p><b>Scan to register and book your nights.</b> Monday &amp; Friday: Caribbean buffet €55 pp. Tue, Wed, Thu: fixed menu of the day, plated, priced per dish. Saturday: pizza night. Served from 19:00. Change or cancel free until 10:00 on the day.</p>
         <p><b>Scannez pour vous inscrire et réserver vos soirées.</b> Lundi &amp; vendredi : buffet caribéen 55 € pp. Mar–sam : menu du jour à l'assiette, prix par plat. Service à partir de 19 h. Modification ou annulation gratuite jusqu'à 10 h le jour même.</p>
         <p>Fewer than 4 guests dining that night: dinner delivered and served by the Paradise Peak team · Adults only · Allergies: tell us when you register.</p>
       </div>
@@ -85,9 +85,9 @@ export function PropertyQr({ qrDataUrl, emailQrDataUrl, joinUrl, emailUrl }: {
 }
 
 const SNIPPET_EN = (url: string) =>
-  `Dinner at the Peak: private dinners by Pirate by Night are served at the property Monday to Saturday (Caribbean buffet on Monday and Friday, €55 per person; menu of the day, plated, on the other nights). Register and book your nights before you arrive: ${url} — free changes until 10:00 on the day.`;
+  `Dinner at the Peak: private dinners by Pirate by Night are served at the property Monday to Saturday (Caribbean buffet on Monday and Friday, €55 per person; menu of the day, plated, on Tuesday, Wednesday and Thursday; pizza night on Saturday). Register and book your nights before you arrive: ${url} — free changes until 10:00 on the day.`;
 const SNIPPET_FR = (url: string) =>
-  `Dîner au Peak : des dîners privés signés Pirate by Night sont servis sur place du lundi au samedi (buffet caribéen le lundi et le vendredi, 55 € par personne ; menu du jour à l'assiette les autres soirs). Inscrivez-vous et réservez vos soirées avant votre arrivée : ${url} — modification gratuite jusqu'à 10 h le jour même.`;
+  `Dîner au Peak : des dîners privés signés Pirate by Night sont servis sur place du lundi au samedi (buffet caribéen le lundi et le vendredi, 55 € par personne ; menu du jour à l'assiette le mardi, le mercredi et le jeudi ; soirée pizza le samedi). Inscrivez-vous et réservez vos soirées avant votre arrivée : ${url} — modification gratuite jusqu'à 10 h le jour même.`;
 
 function btn(primary: boolean): React.CSSProperties {
   return {

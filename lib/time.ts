@@ -95,7 +95,9 @@ export function formatServiceDate(iso: string, lang: 'en' | 'fr' = 'en'): string
 // ---------------------------------------------------------------------
 // Weekly service rhythm (season 2026/27, agreed 2 Nov 2026)
 //   Mon & Fri  → buffet, flat price per adult
-//   Tue/Wed/Thu/Sat → plated fixed menu, priced per dish
+//   Tue/Wed/Thu → plated fixed menu, priced per dish
+//   Sat        → pizza night, delivered from Sandy's Orange, priced per pizza
+//                (stored as a 'plated' menu with main-course items only)
 //   Sun        → closed
 // ---------------------------------------------------------------------
 
@@ -119,6 +121,11 @@ export function nightKind(serviceDate: string): NightKind {
   if (wd === 0) return 'closed';
   if (wd === 1 || wd === 5) return 'buffet';
   return 'plated';
+}
+
+/** Saturday: pizzas ordered in from Sandy's Orange. Always delivered, never plated on site. */
+export function isPizzaNight(serviceDate: string): boolean {
+  return weekdayOf(serviceDate) === 6;
 }
 
 export function addDays(serviceDate: string, n: number): string {

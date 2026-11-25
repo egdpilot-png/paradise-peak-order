@@ -4,7 +4,7 @@
 // (service date < today). Future nights are listed as "booked, not yet due".
 
 import { createClient } from '@supabase/supabase-js';
-import { PARTNER_COMMISSION_BPS, MIN_COVERS_ONSITE, nightKind, todayInMarigot } from './time';
+import { PARTNER_COMMISSION_BPS, MIN_COVERS_ONSITE, nightKind, isPizzaNight, todayInMarigot } from './time';
 
 function admin() {
   return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, { auth: { persistSession: false } });
@@ -71,7 +71,8 @@ export async function loadStatement(month: string): Promise<Statement> {
   const nights = [...byDate.values()].sort((a, b) => a.service_date.localeCompare(b.service_date));
   for (const n of nights) {
     const f = formats.get(n.service_date);
-    n.format = f === 'onsite' || f === 'delivered' ? f : n.covers >= MIN_COVERS_ONSITE ? 'onsite' : 'delivered';
+    n.format = isPizzaNight(n.service_date) ? 'delivered'
+      : f === 'onsite' || f === 'delivered' ? f : n.covers >= MIN_COVERS_ONSITE ? 'onsite' : 'delivered';
     n.commission_cents = n.due ? Math.round((n.sales_cents * PARTNER_COMMISSION_BPS) / 10000) : 0;
   }
 

@@ -8,6 +8,7 @@ export function KpiTiles({ summary }: { summary: TonightSummary }) {
 
   const belowMin = summary.coversConfirmed < summary.minCoversOnsite;
   const formatLabel = summary.serviceFormat === 'closed' ? 'Closed (Sunday)'
+    : summary.isPizzaNight ? 'Pizza night — delivered from Sandy\u2019s Orange'
     : summary.serviceFormat === 'pending' ? (belowMin ? `Below ${summary.minCoversOnsite} — delivered if unchanged` : 'On-site plated service')
     : summary.serviceFormat === 'onsite' ? 'On-site plated service' : 'Delivered — Paradise Peak serves';
   const euro = (c: number) => new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(c / 100);
@@ -16,8 +17,8 @@ export function KpiTiles({ summary }: { summary: TonightSummary }) {
     {
       label: 'Covers tonight',
       value: summary.coversConfirmed,
-      sub: `min ${summary.minCoversOnsite} for on-site · ${formatLabel}`,
-      tone: (belowMin && summary.serviceFormat !== 'closed' ? 'warn' : 'default') as 'warn' | 'default',
+      sub: summary.isPizzaNight ? formatLabel : `min ${summary.minCoversOnsite} for on-site · ${formatLabel}`,
+      tone: (belowMin && summary.serviceFormat !== 'closed' && !summary.isPizzaNight ? 'warn' : 'default') as 'warn' | 'default',
     },
     {
       label: 'Booked value',

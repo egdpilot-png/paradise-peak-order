@@ -7,7 +7,7 @@ import { verifyToken } from '@/lib/token';
 import { loadGuestById, loadMenusBetween, loadOrdersForRoomBetween, loadSkippedNights } from '@/lib/supabase';
 import { NotDiningButton } from './NotDiningButton';
 import {
-  addDays, datesBetween, formatEuro, nightKind, shortDate, todayInMarigot, windowState,
+  addDays, datesBetween, formatEuro, isPizzaNight, nightKind, shortDate, todayInMarigot, windowState,
   BUFFET_PRICE_CENTS, MIN_COVERS_ONSITE,
 } from '@/lib/time';
 import styles from '../guest.module.css';
@@ -110,7 +110,9 @@ export default async function StayPage({ params, searchParams }: Props) {
 
             const kindLabel = kind === 'buffet'
               ? `${t('Caribbean buffet', 'Buffet caribéen')} · ${formatEuro(menu?.cover_price_cents ?? BUFFET_PRICE_CENTS, lang)} ${t('pp', 'pp')}`
-              : t('Fixed menu, plated · priced per dish', 'Menu fixe à l\u2019assiette · prix par plat');
+              : isPizzaNight(date)
+                ? t('Pizza night · delivered from Sandy\u2019s Orange · priced per pizza', 'Soirée pizza · livrée par Sandy\u2019s Orange · prix par pizza')
+                : t('Fixed menu, plated · priced per dish', 'Menu fixe à l\u2019assiette · prix par plat');
 
             let status: string;
             let statusClass = styles.nightStatus;

@@ -44,8 +44,8 @@ export function JoinForm({ src, initialLang }: { src: string; initialLang: 'en' 
         <p className={styles.cardTitle}>{t('How it works', 'Comment ça marche')}</p>
         <p className={styles.lead} style={{ margin: 0 }}>
           {t(
-            'Monday and Friday: Caribbean buffet, €55 per person. Tuesday to Saturday (except Friday): fixed menu of the day, served plated, priced per dish. No service on Sundays. Change or cancel free of charge until 10:00 on the day.',
-            'Lundi et vendredi : buffet caribéen, 55 € par personne. Du mardi au samedi (sauf vendredi) : menu du jour servi à l\u2019assiette, prix par plat. Pas de service le dimanche. Modification ou annulation gratuite jusqu\u2019à 10 h le jour même.',
+            'Monday and Friday: Caribbean buffet, €55 per person. Tuesday, Wednesday and Thursday: fixed menu of the day, served plated, priced per dish. Saturday: pizza night, priced per pizza. No service on Sundays. Change or cancel free of charge until 10:00 on the day.',
+            'Lundi et vendredi : buffet caribéen, 55 € par personne. Mardi, mercredi et jeudi : menu du jour servi à l\u2019assiette, prix par plat. Samedi : soirée pizza, prix par pizza. Pas de service le dimanche. Modification ou annulation gratuite jusqu\u2019à 10 h le jour même.',
           )}
         </p>
       </section>

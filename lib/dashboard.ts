@@ -5,7 +5,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import 'server-only';
-import { windowOverride, nightKind, MIN_COVERS_ONSITE } from '@/lib/time';
+import { windowOverride, nightKind, isPizzaNight, MIN_COVERS_ONSITE } from '@/lib/time';
 import type {
   Guest,
   Menu,
@@ -43,6 +43,7 @@ export interface TonightSummary {
   windowState: 'not_yet_open' | 'open' | 'late' | 'past_hard_lock' | 'past_service';
   // Season 2026/27
   nightKind: 'buffet' | 'plated' | 'closed';
+  isPizzaNight: boolean;
   minCoversOnsite: number;
   serviceFormat: 'onsite' | 'delivered' | 'closed' | 'pending';
   revenueCents: number;
@@ -154,8 +155,11 @@ export async function loadTonightSummary(date: string): Promise<TonightSummary> 
     windowState: computeWindow(date),
     nightKind: nightKind(date),
     minCoversOnsite: MIN_COVERS_ONSITE,
+    isPizzaNight: isPizzaNight(date),
+    // Pizza night (Saturday) is always delivered; the 4-cover on-site rule applies to buffet and plated nights.
     serviceFormat: nightKind(date) === 'closed'
       ? 'closed'
+      : isPizzaNight(date) ? 'delivered'
       : (publishRes.data?.service_format as any) ?? (computeWindow(date) === 'open' || computeWindow(date) === 'not_yet_open' ? 'pending' : (coversConfirmed >= MIN_COVERS_ONSITE ? 'onsite' : 'delivered')),
     revenueCents: submittedOrders.reduce((s, o) => s + (o.total_cents ?? 0), 0),
     chargedCents: submittedOrders.filter(o => o.payment_status === 'charged').reduce((s, o) => s + (o.total_cents ?? 0), 0),
