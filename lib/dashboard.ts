@@ -363,7 +363,7 @@ function mapRoomRow(r: any): RoomRow {
     guest_id: r.guest_id,
     guest_name: r.guest_name,
     language: (r.language ?? 'en') as 'en' | 'fr',
-    party_size: r.party_size ?? 1,
+    party_size: r.party_size ?? r.cover_count ?? 1,
     dietary_flags: r.dietary_flags ?? [],
     allergy_notes: r.allergy_notes,
     status: (r.derived_status ?? 'no_order') as RoomStatus,

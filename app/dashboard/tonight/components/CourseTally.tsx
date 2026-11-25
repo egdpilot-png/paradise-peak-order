@@ -30,13 +30,14 @@ export function CourseTally({ tally, menu }: { tally: CourseTallyRow[]; menu: Me
   }
 
   const activeCourses = COURSE_ORDER.filter(c => byCourse.has(c));
-  const totalOrders = tally.reduce((s, r) => s + r.count, 0);
+  const plates = (r: { count: number; covers: number | null }) => r.covers ?? r.count;
+  const totalOrders = tally.reduce((s, r) => s + plates(r), 0);
 
   return (
     <section className={styles.panel}>
       <div className={styles.panelHead}>
         <h2 className={styles.panelTitle}>Course tally</h2>
-        <span className={styles.panelMeta}>{totalOrders} selections</span>
+        <span className={styles.panelMeta}>{totalOrders} plates</span>
       </div>
 
       {activeCourses.length === 0 ? (
@@ -45,7 +46,7 @@ export function CourseTally({ tally, menu }: { tally: CourseTallyRow[]; menu: Me
         <div className={styles.tallyGrid}>
           {activeCourses.map((course) => {
             const rows = byCourse.get(course)!;
-            const max = Math.max(...rows.map(r => r.count));
+            const max = Math.max(...rows.map(r => plates(r)));
             return (
               <div key={course} className={styles.tallyCourse}>
                 <h3 className={styles.tallyCourseTitle}>{COURSE_LABEL[course]}</h3>
@@ -54,12 +55,12 @@ export function CourseTally({ tally, menu }: { tally: CourseTallyRow[]; menu: Me
                     <li key={r.menu_item_id} className={styles.tallyRow}>
                       <div className={styles.tallyRowText}>
                         <span className={styles.tallyName}>{r.name}</span>
-                        <span className={styles.tallyCount}>×{r.count}</span>
+                        <span className={styles.tallyCount}>×{plates(r)}</span>
                       </div>
                       <div className={styles.tallyBar} aria-hidden>
                         <div
                           className={styles.tallyBarFill}
-                          style={{ width: `${(r.count / max) * 100}%` }}
+                          style={{ width: `${(plates(r) / max) * 100}%` }}
                         />
                       </div>
                     </li>
