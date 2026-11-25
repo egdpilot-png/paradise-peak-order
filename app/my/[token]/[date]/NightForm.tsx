@@ -107,6 +107,7 @@ export function NightForm({ token, menu, guest, existing, canEdit, lang }: Props
   const [notes, setNotes] = useState(existing?.notes ?? '');
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<Order | null>(null);
+  const [emailed, setEmailed] = useState(false);
 
   const seatTotal = (st: Seat) =>
     COURSES.reduce((acc, c) => acc + (menu.items.find((i) => i.id === st[c.key])?.price_cents ?? 0), 0);
@@ -147,6 +148,7 @@ export function NightForm({ token, menu, guest, existing, canEdit, lang }: Props
         return;
       }
       const data = await res.json();
+      setEmailed(Boolean(data.emailed));
       setDone(data.order);
       router.refresh();
     });
@@ -180,9 +182,12 @@ export function NightForm({ token, menu, guest, existing, canEdit, lang }: Props
         </header>
         <section className={styles.body}>
           <p className={styles.lead}>
+            {emailed
+              ? t('A confirmation is on its way to your email. ', 'Une confirmation part vers votre e-mail. ')
+              : t('Your booking is saved on your stay page. ', 'Votre réservation est enregistrée sur votre page de séjour. ')}
             {t(
-              'A confirmation is on its way to your email. You can change or cancel this night until 10:00 that morning; your card is charged at 10:00.',
-              'Une confirmation part vers votre e-mail. Vous pouvez modifier ou annuler cette soirée jusqu\u2019à 10 h le matin même ; votre carte est débitée à 10 h.',
+              'You can change or cancel this night until 10:00 that morning; your card is charged at 10:00.',
+              'Vous pouvez modifier ou annuler cette soirée jusqu\u2019à 10 h le matin même ; votre carte est débitée à 10 h.',
             )}
           </p>
           <a href={`/my/${token}`} className={styles.submit} style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>

@@ -96,7 +96,7 @@ Items marked **[DECISION]** need a yes/no or a figure from Eugene, Hugh or Thess
 ### Summary card for guests (to print or display next to the QR)
 
 - Dinner Monday to Saturday, from 19:00. No service on Sundays.
-- Monday and Friday: Caribbean buffet, €55 per adult. Other nights: fixed menu, priced per dish.
+- Monday and Friday: Caribbean buffet, €55 per adult. Tuesday to Thursday: fixed menu, priced per dish. Saturday: pizza night, priced per pizza.
 - Book by scanning the QR or via the link in your confirmation email. Card saved, nothing charged at booking.
 - Change or cancel free of charge until 10:00 on the day. Charged at 10:00; no refund after.
 - Fewer than 4 guests dining that night: dinner is delivered and served by the Paradise Peak team; you are told by 10:30.
@@ -193,7 +193,7 @@ Items marked **[DECISION]** need a yes/no or a figure from Eugene, Hugh or Thess
 ### Fiche résumé pour les hôtes (à imprimer ou afficher près du QR code)
 
 - Dîner du lundi au samedi, à partir de 19 h. Pas de service le dimanche.
-- Lundi et vendredi : buffet caribéen, 55 € par adulte. Les autres soirs : menu fixe, prix par plat.
+- Lundi et vendredi : buffet caribéen, 55 € par adulte. Du mardi au jeudi : menu fixe, prix par plat. Samedi : soirée pizza, prix par pizza.
 - Réservez en scannant le QR code ou via le lien de votre e-mail de confirmation. Carte enregistrée, rien n'est prélevé à la réservation.
 - Modification ou annulation gratuite jusqu'à 10 h le jour même. Prélèvement à 10 h ; aucun remboursement ensuite.
 - Moins de 4 convives ce soir-là : le dîner est livré et servi par l'équipe de Paradise Peak ; vous êtes prévenu avant 10 h 30.
