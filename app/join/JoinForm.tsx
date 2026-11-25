@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useFormState, useFormStatus } from 'react-dom';
 import { registerGuest, type JoinResult } from './actions';
+import { WEEK_LINES, WEEK_FOOT } from '@/lib/week';
 import styles from '@/app/my/guest.module.css';
 
 const FLAGS: { key: string; en: string; fr: string }[] = [
@@ -42,12 +43,15 @@ export function JoinForm({ src, initialLang }: { src: string; initialLang: 'en' 
 
       <section className={styles.card}>
         <p className={styles.cardTitle}>{t('How it works', 'Comment ça marche')}</p>
-        <p className={styles.lead} style={{ margin: 0 }}>
-          {t(
-            'Monday and Friday: Caribbean buffet, €55 per person. Tuesday, Wednesday and Thursday: fixed menu of the day, served plated, priced per dish. Saturday: pizza night, priced per pizza. No service on Sundays. Change or cancel free of charge until 10:00 on the day.',
-            'Lundi et vendredi : buffet caribéen, 55 € par personne. Mardi, mercredi et jeudi : menu du jour servi à l\u2019assiette, prix par plat. Samedi : soirée pizza, prix par pizza. Pas de service le dimanche. Modification ou annulation gratuite jusqu\u2019à 10 h le jour même.',
-          )}
-        </p>
+        <ul className={styles.weekList}>
+          {WEEK_LINES.map((w) => (
+            <li key={w.day}>
+              <span className={styles.weekDay}>{lang === 'fr' ? w.day_fr : w.day}</span>
+              <span>{lang === 'fr' ? w.text_fr : w.text}</span>
+            </li>
+          ))}
+        </ul>
+        <p className={styles.finePrint} style={{ margin: '10px 0 0' }}>{lang === 'fr' ? WEEK_FOOT.fr : WEEK_FOOT.en}</p>
       </section>
 
       <form action={action} className={styles.body}>

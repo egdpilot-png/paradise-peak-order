@@ -8,6 +8,7 @@ import { sendBookingEmail } from '@/lib/email';
 import type { Guest } from '@/lib/types';
 import { isOrderingOpen, nightKind } from '@/lib/time';
 import { verifyToken } from '@/lib/token';
+import { createCardSetupSession, hasUsableCard, stripeEnabled } from '@/lib/stripe';
 
 export const runtime = 'nodejs';
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://menu.piratebynight.com';
@@ -49,12 +50,44 @@ export async function POST(req: Request) {
     }
   }
 
+  // With payments on, a guest's first booking waits for a card: it is saved as
+  // a draft, the guest goes to Stripe's secure page, and it is confirmed on
+  // their return. Guests with a card on file are confirmed straight away.
+  const paymentsOn = stripeEnabled() && Boolean(guest);
+  const cardOk = paymentsOn && hasUsableCard(guest);
+  const needsCard = paymentsOn && !cardOk;
+
   try {
     const before = await loadOrderForRoomDate(room, serviceDate);
-    const order = await upsertOrder({ room, guestId, menuId, serviceDate, coverCount, notes, choices, entryChannel: 'guest_qr' });
-    // Confirmation to the guest (cc Paradise Peak). Best-effort, never blocks the booking.
-    const emailed = await sendBookingEmail(order, guest, `${APP_URL}/my/${encodeURIComponent(String(token))}`, before ? 'updated' : 'new');
-    return NextResponse.json({ ok: true, order, emailed });
+    if (before && ['charged', 'charging'].includes(before.payment_status ?? '')) {
+      return NextResponse.json({ error: 'this night has already been charged' }, { status: 409 });
+    }
+    const order = await upsertOrder({
+      room, guestId, menuId, serviceDate, coverCount, notes, choices, entryChannel: 'guest_qr',
+      status: needsCard ? 'draft' : 'submitted',
+      paymentStatus: cardOk ? 'card_on_file' : 'none',
+    });
+
+    if (needsCard && guest) {
+      const origin = new URL(req.url).origin;
+      const t = encodeURIComponent(String(token));
+      try {
+        const checkoutUrl = await createCardSetupSession(guest, {
+          successUrl: `${origin}/my/${t}/card/done?session_id={CHECKOUT_SESSION_ID}`,
+          cancelUrl: `${origin}/my/${t}?card=cancelled`,
+        });
+        return NextResponse.json({ ok: true, order, needsCard: true, checkoutUrl, emailed: false });
+      } catch (err: any) {
+        console.error('[order] card setup session failed', err);
+        // The draft is kept; the stay page offers "Add card" to finish.
+        return NextResponse.json({ ok: true, order, needsCard: true, checkoutUrl: null, emailed: false });
+      }
+    }
+
+    // Confirmation to the guest. Best-effort, never blocks the booking.
+    const wasConfirmed = before && before.status !== 'draft';
+    const emailed = await sendBookingEmail(order, guest, `${APP_URL}/my/${encodeURIComponent(String(token))}`, wasConfirmed ? 'updated' : 'new');
+    return NextResponse.json({ ok: true, order, emailed, card: cardOk && guest ? { brand: guest.card_brand, last4: guest.card_last4 } : null });
   } catch (err: any) {
     return NextResponse.json({ error: 'failed to save order', detail: err?.message ?? String(err) }, { status: 500 });
   }

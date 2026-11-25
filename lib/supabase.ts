@@ -106,6 +106,9 @@ interface SubmitOrderInput {
   // One entry per person × course. `seat` is 1-based; omitted seat = 1.
   choices: { menuItemId: string; course: string; seat?: number; note?: string | null }[];
   entryChannel?: 'guest_qr' | 'staff_tablet' | 'whatsapp';
+  /** 'draft' = waiting for a card before it counts as a booking. Default 'submitted'. */
+  status?: 'draft' | 'submitted';
+  paymentStatus?: 'none' | 'card_on_file';
 }
 
 export async function upsertOrder(input: SubmitOrderInput): Promise<Order> {
@@ -129,9 +132,12 @@ export async function upsertOrder(input: SubmitOrderInput): Promise<Order> {
       .update({
         cover_count: input.coverCount,
         notes: input.notes ?? null,
-        status: 'submitted',
+        menu_id: input.menuId,
+        status: input.status ?? 'submitted',
         submitted_at: new Date().toISOString(),
         cancelled_at: null,
+        payment_status: input.paymentStatus ?? 'none',
+        payment_error: null,
         guest_id: input.guestId ?? null,
         entry_channel: input.entryChannel ?? 'guest_qr',
       })
@@ -139,21 +145,30 @@ export async function upsertOrder(input: SubmitOrderInput): Promise<Order> {
     // Clear old items — simpler than diffing
     await svc.from('order_items').delete().eq('order_id', orderId);
   } else {
-    const { data: created, error } = await svc
-      .from('orders')
-      .insert({
-        room_number: input.room,
-        guest_id: input.guestId ?? null,
-        menu_id: input.menuId,
-        service_date: input.serviceDate,
-        cover_count: input.coverCount,
-        notes: input.notes ?? null,
-        status: 'submitted',
-        submitted_at: new Date().toISOString(),
-        entry_channel: input.entryChannel ?? 'guest_qr',
-      })
-      .select('id')
-      .single();
+    const row = {
+      room_number: input.room,
+      guest_id: input.guestId ?? null,
+      menu_id: input.menuId,
+      service_date: input.serviceDate,
+      cover_count: input.coverCount,
+      notes: input.notes ?? null,
+      status: input.status ?? 'submitted',
+      submitted_at: new Date().toISOString(),
+      payment_status: input.paymentStatus ?? 'none',
+      entry_channel: input.entryChannel ?? 'guest_qr',
+    };
+    // The order reference is numbered per night by the database. Two guests
+    // booking the same night in the same instant can draw the same number:
+    // the second insert is simply tried again.
+    let created: { id: string } | null = null;
+    let error: any = null;
+    for (let i = 0; i < 4 && !created; i++) {
+      const res = await svc.from('orders').insert(row).select('id').single();
+      created = (res.data as { id: string } | null) ?? null;
+      error = res.error;
+      if (!error || error.code !== '23505' || !String(error.message ?? '').includes('order_ref')) break;
+      await new Promise((r) => setTimeout(r, 40 + Math.random() * 120));
+    }
     if (error || !created) throw error ?? new Error('order insert failed');
     orderId = created.id;
   }

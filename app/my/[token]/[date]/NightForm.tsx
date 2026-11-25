@@ -17,6 +17,10 @@ interface Props {
   existing: Order | null;
   canEdit: boolean;
   lang: 'en' | 'fr';
+  /** Card payments are switched on. */
+  paymentsOn: boolean;
+  /** The guest already has a card on file that can be charged. */
+  hasCard: boolean;
 }
 
 const COURSES: { key: Course; label: string; label_fr: string }[] = [
@@ -40,7 +44,7 @@ function itemBlockedByGuest(item: MenuItem, guest: Guest | null): boolean {
   return false;
 }
 
-export function NightForm({ token, menu, guest, existing, canEdit, lang }: Props) {
+export function NightForm({ token, menu, guest, existing, canEdit, lang, paymentsOn, hasCard }: Props) {
   const t = (en: string, fr: string) => (lang === 'fr' ? fr : en);
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -108,6 +112,10 @@ export function NightForm({ token, menu, guest, existing, canEdit, lang }: Props
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<Order | null>(null);
   const [emailed, setEmailed] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
+  const awaitingCard = existing?.status === 'draft';
+  const needsCard = paymentsOn && !hasCard;
+  const cardLabel = guest.card_last4 ? `${guest.card_brand ?? ''} •••• ${guest.card_last4}`.trim() : null;
 
   const seatTotal = (st: Seat) =>
     COURSES.reduce((acc, c) => acc + (menu.items.find((i) => i.id === st[c.key])?.price_cents ?? 0), 0);
@@ -148,6 +156,13 @@ export function NightForm({ token, menu, guest, existing, canEdit, lang }: Props
         return;
       }
       const data = await res.json();
+      if (data.needsCard) {
+        // First booking: the night is held while the guest saves a card on Stripe's secure page.
+        if (data.checkoutUrl) { setRedirecting(true); window.location.assign(data.checkoutUrl); return; }
+        setError(t('Your choices are saved, but the card page could not be opened. Use "Add card" on your stay page to confirm.', 'Vos choix sont enregistrés, mais la page de carte n\u2019a pas pu s\u2019ouvrir. Utilisez « Ajouter une carte » sur votre page de séjour pour confirmer.'));
+        router.refresh();
+        return;
+      }
       setEmailed(Boolean(data.emailed));
       setDone(data.order);
       router.refresh();
@@ -185,10 +200,15 @@ export function NightForm({ token, menu, guest, existing, canEdit, lang }: Props
             {emailed
               ? t('A confirmation is on its way to your email. ', 'Une confirmation part vers votre e-mail. ')
               : t('Your booking is saved on your stay page. ', 'Votre réservation est enregistrée sur votre page de séjour. ')}
-            {t(
-              'You can change or cancel this night until 10:00 that morning; your card is charged at 10:00.',
-              'Vous pouvez modifier ou annuler cette soirée jusqu\u2019à 10 h le matin même ; votre carte est débitée à 10 h.',
-            )}
+            {paymentsOn && cardLabel
+              ? t(
+                  `You can change or cancel this night until 10:00 that morning. Your card ${cardLabel} is charged ${formatEuro(done.total_cents ?? total, lang)} at 10:00 that day, not before.`,
+                  `Vous pouvez modifier ou annuler cette soirée jusqu\u2019à 10 h le matin même. Votre carte ${cardLabel} est débitée de ${formatEuro(done.total_cents ?? total, lang)} à 10 h ce jour-là, pas avant.`,
+                )
+              : t(
+                  'You can change or cancel this night until 10:00 that morning.',
+                  'Vous pouvez modifier ou annuler cette soirée jusqu\u2019à 10 h le matin même.',
+                )}
           </p>
           <a href={`/my/${token}`} className={styles.submit} style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>
             {t('Back to your nights', 'Retour à vos soirées')}
@@ -206,6 +226,15 @@ export function NightForm({ token, menu, guest, existing, canEdit, lang }: Props
         {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
         <p className={styles.meta}>{formatServiceDate(menu.service_date, lang)} · {t('from 19:00', 'à partir de 19 h')}</p>
       </header>
+
+      {awaitingCard && canEdit && (
+        <div className={styles.notice}>
+          {t(
+            'These choices are saved but the night is not confirmed yet: a card is needed. Press the button at the bottom of the page to add it.',
+            'Ces choix sont enregistrés mais la soirée n\u2019est pas encore confirmée : une carte est nécessaire. Utilisez le bouton en bas de page pour l\u2019ajouter.',
+          )}
+        </div>
+      )}
 
       {(guest.dietary_flags.length > 0 || guest.allergy_notes) && (
         <aside className={styles.allergyBanner}>
@@ -363,8 +392,11 @@ export function NightForm({ token, menu, guest, existing, canEdit, lang }: Props
 
         {canEdit ? (
           <>
-            <button type="button" className={styles.submit} disabled={isPending} onClick={submit}>
-              {isPending ? t('Sending…', 'Envoi…') : existing ? t('Save changes', 'Enregistrer') : t('Confirm this night', 'Confirmer cette soirée')}
+            <button type="button" className={styles.submit} disabled={isPending || redirecting} onClick={submit}>
+              {redirecting ? t('Opening the secure card page…', 'Ouverture de la page de carte sécurisée…')
+                : isPending ? t('Sending…', 'Envoi…')
+                : needsCard ? t('Continue to card details', 'Continuer vers la carte')
+                : existing ? t('Save changes', 'Enregistrer') : t('Confirm this night', 'Confirmer cette soirée')}
             </button>
             {existing && (
               <p className={styles.finePrint}>
@@ -372,7 +404,17 @@ export function NightForm({ token, menu, guest, existing, canEdit, lang }: Props
               </p>
             )}
             <p className={styles.finePrint}>
-              {t('Free changes until 10:00 on the day. Your card is charged at 10:00; no refund after that.', 'Modification gratuite jusqu\u2019à 10 h le jour même. Carte débitée à 10 h ; pas de remboursement ensuite.')}
+              {needsCard
+                ? t(
+                    'Next step: your card details, on Stripe\u2019s secure page. Nothing is charged now. The card is charged at 10:00 on the day of the dinner; until then you can change or cancel free of charge.',
+                    'Étape suivante : votre carte, sur la page sécurisée de Stripe. Rien n\u2019est débité maintenant. La carte est débitée à 10 h le jour du dîner ; d\u2019ici là, modification ou annulation sans frais.',
+                  )
+                : paymentsOn && cardLabel
+                  ? t(
+                      `Free changes until 10:00 on the day. Your card ${cardLabel} is charged at 10:00; no refund after that.`,
+                      `Modification gratuite jusqu\u2019à 10 h le jour même. Votre carte ${cardLabel} est débitée à 10 h ; pas de remboursement ensuite.`,
+                    )
+                  : t('Free changes until 10:00 on the day; the night is final after that.', 'Modification gratuite jusqu\u2019à 10 h le jour même ; la soirée est ensuite définitive.')}
             </p>
           </>
         ) : (

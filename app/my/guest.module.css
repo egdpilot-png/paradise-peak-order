@@ -318,3 +318,12 @@
 .linkBtn { background: none; border: none; padding: 0; font: inherit; color: #8A6420; text-decoration: underline; cursor: pointer; }
 .seatSummary { list-style: none; margin: 8px 0 16px; padding: 0; font-size: 0.9rem; color: #5a564e; }
 .seatSummary li { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px dashed #E2D9C6; }
+
+/* Weekly rhythm, one line per day */
+.weekList { list-style: none; margin: 0; padding: 0; }
+.weekList li {
+  display: grid; grid-template-columns: 6.2em 1fr; gap: 12px; align-items: baseline;
+  padding: 7px 0; border-bottom: 1px dashed #E2D9C6; font-size: 0.97rem; line-height: 1.4;
+}
+.weekList li:last-child { border-bottom: none; }
+.weekDay { font-weight: 600; color: var(--ink); }

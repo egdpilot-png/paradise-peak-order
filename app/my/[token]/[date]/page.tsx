@@ -6,6 +6,7 @@ import { verifyToken } from '@/lib/token';
 import { loadGuestById, loadMenuForDate, loadOrderForRoomDate } from '@/lib/supabase';
 import { addDays, nightKind, shortDate, todayInMarigot, windowState } from '@/lib/time';
 import { NightForm } from './NightForm';
+import { hasUsableCard, stripeEnabled } from '@/lib/stripe';
 import styles from '../../guest.module.css';
 
 interface Props { params: Promise<{ token: string; date: string }> }
@@ -55,7 +56,7 @@ export default async function NightPage({ params }: Props) {
     );
   }
 
-  if (!order && state !== 'open') {
+  if ((!order || order.status === 'draft') && state !== 'open') {
     return (
       <main className={styles.frame}>
         {back}
@@ -82,6 +83,8 @@ export default async function NightPage({ params }: Props) {
         existing={order}
         canEdit={state === 'open'}
         lang={lang}
+        paymentsOn={stripeEnabled()}
+        hasCard={hasUsableCard(guest)}
       />
     </main>
   );

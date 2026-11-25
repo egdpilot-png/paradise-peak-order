@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { WEEK_LINES } from '@/lib/week';
 
 const card: React.CSSProperties = {
   background: '#FBF8F1', border: '1px solid #E2D8C3', borderRadius: 16, padding: '1.25rem 1.5rem',
@@ -19,13 +20,18 @@ export function PropertyQr({ qrDataUrl, emailQrDataUrl, joinUrl, emailUrl }: {
     w.document.write(`<!doctype html><html><head><title>Dinner at the Peak · QR</title>
       <style>
         @page { size: A5; margin: 12mm; }
-        body { font-family: Georgia, serif; color: #28251D; background: #FBF8F1; margin: 0; padding: 24px; text-align: center; }
+        body { font-family: Georgia, serif; color: #28251D; background: #FBF8F1; margin: 0; padding: 10px 16px; text-align: center; }
         .eyebrow { font-family: Inter, sans-serif; font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #7A6E56; }
         h1 { font-size: 30px; margin: 6px 0 2px; }
-        h2 { font-size: 16px; font-weight: normal; margin: 0 0 18px; color: #4a463f; }
-        img { width: 260px; height: 260px; }
-        .rules { font-family: Inter, sans-serif; font-size: 12.5px; line-height: 1.5; text-align: left; margin: 18px auto 0; max-width: 420px; color: #4a463f; }
-        .rules p { margin: 0 0 6px; }
+        h2 { font-size: 15px; font-weight: normal; margin: 0 0 12px; color: #4a463f; }
+        img { width: 200px; height: 200px; }
+        .rules { font-family: Inter, sans-serif; font-size: 11px; line-height: 1.4; text-align: left; margin: 12px auto 0; max-width: 440px; color: #4a463f; }
+        .rules p { margin: 0 0 5px; }
+        .rules table { border-collapse: collapse; width: 100%; margin: 6px 0 8px; }
+        .rules td { padding: 2px 0; vertical-align: top; border-bottom: 1px dotted #d8cfbd; line-height: 1.25; }
+        .rules td.d { width: 84px; font-weight: 600; padding-right: 10px; }
+        .rules td.d i { font-weight: 400; }
+        .rules i { color: #7a7468; }
         .url { font-family: Inter, sans-serif; font-size: 12px; color: #8B3A2E; margin-top: 10px; }
       </style></head><body>
       <div class="eyebrow">Pirate by Night · The Paradise Peak</div>
@@ -34,8 +40,9 @@ export function PropertyQr({ qrDataUrl, emailQrDataUrl, joinUrl, emailUrl }: {
       <img src="${qrDataUrl}" alt="QR" />
       <div class="url">${joinUrl.replace('https://', '')}</div>
       <div class="rules">
-        <p><b>Scan to register and book your nights.</b> Monday &amp; Friday: Caribbean buffet €55 pp. Tue, Wed, Thu: fixed menu of the day, plated, priced per dish. Saturday: pizza night. Served from 19:00. Change or cancel free until 10:00 on the day.</p>
-        <p><b>Scannez pour vous inscrire et réserver vos soirées.</b> Lundi &amp; vendredi : buffet caribéen 55 € pp. Mar, mer, jeu : menu du jour à l'assiette, prix par plat. Samedi : soirée pizza. Service à partir de 19 h. Modification ou annulation gratuite jusqu'à 10 h le jour même.</p>
+        <p><b>Scan to register and book your nights.</b> <b>Scannez pour vous inscrire et réserver vos soirées.</b></p>
+        <table>${WEEK_LINES.map((w) => `<tr><td class="d">${w.day}<br><i>${w.day_fr}</i></td><td>${w.text}<br><i>${w.text_fr}</i></td></tr>`).join('')}</table>
+        <p>Served from 19:00. Change or cancel free until 10:00 on the day. <i>Service à partir de 19 h. Modification ou annulation gratuite jusqu'à 10 h le jour même.</i></p>
         <p>Fewer than 4 guests dining that night: dinner delivered and served by the Paradise Peak team · Adults only · Allergies: tell us when you register.</p>
       </div>
       <script>window.onload=()=>{window.print();}</script>
@@ -76,7 +83,7 @@ export function PropertyQr({ qrDataUrl, emailQrDataUrl, joinUrl, emailUrl }: {
               <button onClick={() => copy(SNIPPET_EN(emailUrl))} style={btn(false)}>{copied === SNIPPET_EN(emailUrl) ? 'Copied' : 'Copy email paragraph (EN)'}</button>
               <button onClick={() => copy(SNIPPET_FR(emailUrl))} style={btn(false)}>{copied === SNIPPET_FR(emailUrl) ? 'Copied' : 'Copier le paragraphe (FR)'}</button>
             </div>
-            <p style={{ color: '#7A6E56', fontSize: '0.82rem', marginTop: 12, marginBottom: 0 }}>{SNIPPET_EN(emailUrl)}</p>
+            <p style={{ color: '#7A6E56', fontSize: '0.82rem', marginTop: 12, marginBottom: 0, whiteSpace: 'pre-line' }}>{SNIPPET_EN(emailUrl)}</p>
           </div>
         </div>
       </section>
@@ -84,10 +91,12 @@ export function PropertyQr({ qrDataUrl, emailQrDataUrl, joinUrl, emailUrl }: {
   );
 }
 
+const bullets = (lang: 'en' | 'fr') =>
+  WEEK_LINES.map((w) => `• ${lang === 'fr' ? w.day_fr : w.day}${lang === 'fr' ? ' : ' : ': '}${lang === 'fr' ? w.text_fr : w.text}`).join('\n');
 const SNIPPET_EN = (url: string) =>
-  `Dinner at the Peak: private dinners by Pirate by Night are served at the property Monday to Saturday (Caribbean buffet on Monday and Friday, €55 per person; menu of the day, plated, on Tuesday, Wednesday and Thursday; pizza night on Saturday). Register and book your nights before you arrive: ${url} — free changes until 10:00 on the day.`;
+  `Dinner at the Peak: private dinners by Pirate by Night, served at the property from 19:00.\n${bullets('en')}\nRegister and book your nights before you arrive: ${url}\nFree changes until 10:00 on the day. A card is requested with your first booking and charged at 10:00 on the day of each dinner.`;
 const SNIPPET_FR = (url: string) =>
-  `Dîner au Peak : des dîners privés signés Pirate by Night sont servis sur place du lundi au samedi (buffet caribéen le lundi et le vendredi, 55 € par personne ; menu du jour à l'assiette le mardi, le mercredi et le jeudi ; soirée pizza le samedi). Inscrivez-vous et réservez vos soirées avant votre arrivée : ${url} — modification gratuite jusqu'à 10 h le jour même.`;
+  `Dîner au Peak : des dîners privés signés Pirate by Night, servis sur place à partir de 19 h.\n${bullets('fr')}\nInscrivez-vous et réservez vos soirées avant votre arrivée : ${url}\nModification gratuite jusqu'à 10 h le jour même. Une carte est demandée à la première réservation et débitée à 10 h le jour de chaque dîner.`;
 
 function btn(primary: boolean): React.CSSProperties {
   return {

@@ -73,10 +73,13 @@ export interface Guest {
   card_last4?: string | null;
   stripe_customer_id?: string | null;
   stripe_payment_method_id?: string | null;
+  /** Mode of the Stripe key that saved the card: true = live, false = test. */
+  stripe_livemode?: boolean | null;
+  card_exp?: string | null;
   terms_accepted_at?: string | null;
 }
 
-export type PaymentStatus = 'none' | 'card_on_file' | 'charged' | 'failed' | 'refunded' | 'waived';
+export type PaymentStatus = 'none' | 'card_on_file' | 'charging' | 'charged' | 'failed' | 'refunded' | 'waived';
 export type ServiceFormat = 'onsite' | 'delivered' | 'closed';
 
 export interface Order {
@@ -93,6 +96,10 @@ export interface Order {
   locked_at: string | null;
   total_cents?: number | null;
   payment_status?: PaymentStatus;
+  payment_attempts?: number;
+  payment_error?: string | null;
+  stripe_payment_intent_id?: string | null;
+  charged_at?: string | null;
   items: OrderItem[];
 }
 

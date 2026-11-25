@@ -97,6 +97,9 @@ export interface RoomRow {
   courses: { course: CourseType; dish_name: string; qty?: number; seats?: number[]; notes?: string | null }[];
   notes: string | null;
   last_updated: string | null;
+  total_cents: number | null;
+  payment_status: string | null;
+  payment_error: string | null;
 }
 
 // ----------------------------------------------------------------------
@@ -225,7 +228,18 @@ export async function loadRoomRows(date: string): Promise<RoomRow[]> {
     .eq('service_date', date)
     .order('room_number');
   if (error) throw error;
-  return ((data ?? []) as any[]).map(mapRoomRow);
+  const rows = ((data ?? []) as any[]).map(mapRoomRow);
+  // Payment state lives on the order, not in the view.
+  const ids = rows.map((r) => r.order_id).filter(Boolean) as string[];
+  if (ids.length) {
+    const { data: pay } = await sb.from('orders').select('id, total_cents, payment_status, payment_error').in('id', ids);
+    const byId = new Map(((pay ?? []) as any[]).map((o) => [o.id, o]));
+    for (const r of rows) {
+      const o = r.order_id ? byId.get(r.order_id) : null;
+      if (o) { r.total_cents = o.total_cents; r.payment_status = o.payment_status; r.payment_error = o.payment_error; }
+    }
+  }
+  return rows;
 }
 
 // ----------------------------------------------------------------------
@@ -373,5 +387,8 @@ function mapRoomRow(r: any): RoomRow {
     courses: r.courses ?? [],
     notes: r.notes,
     last_updated: r.last_updated,
+    total_cents: null,
+    payment_status: null,
+    payment_error: null,
   };
 }

@@ -7,7 +7,7 @@ import styles from '../dashboard.module.css';
 const STATUS_LABEL: Record<RoomStatus, string> = {
   submitted: 'Ordered',
   buffet_confirmed: 'Buffet confirmed',
-  pending: 'Draft',
+  pending: 'Awaiting card',
   chefs_choice: "Chef's choice",
   late_window: 'Late window',
   not_dining: 'Not dining',
@@ -23,6 +23,22 @@ const STATUS_TONE: Record<RoomStatus, string> = {
   not_dining: styles.toneMuted,
   no_order: styles.toneCrit,
 };
+
+const PAY_LABEL: Record<string, string> = {
+  card_on_file: 'Card on file',
+  charging: 'Charging',
+  charged: 'Paid',
+  failed: 'Payment declined',
+  refunded: 'Refunded',
+};
+const PAY_TONE: Record<string, string> = {
+  card_on_file: styles.toneMuted,
+  charging: styles.tonePending,
+  charged: styles.toneGood,
+  failed: styles.toneCrit,
+  refunded: styles.toneMuted,
+};
+const euro = (c: number) => new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR', minimumFractionDigits: c % 100 === 0 ? 0 : 2 }).format(c / 100);
 
 export function RoomStrip({ rooms, serviceType }: { rooms: RoomRow[]; serviceType: ServiceType | null }) {
   return (
@@ -82,6 +98,17 @@ export function RoomStrip({ rooms, serviceType }: { rooms: RoomRow[]; serviceTyp
                 ) : r.status === 'not_dining' ? (
                   <p className={styles.roomNoteMuted}>Guest declared: not dining tonight</p>
                 ) : null
+              )}
+
+              {r.status === 'pending' && (
+                <p className={styles.roomNoteMuted}>Not confirmed: the guest has not added a card yet. Do not prepare.</p>
+              )}
+              {PAY_LABEL[r.payment_status ?? ''] && r.status !== 'pending' && (
+                <p className={styles.roomNote}>
+                  <span className={`${styles.chip} ${PAY_TONE[r.payment_status ?? '']}`}>{PAY_LABEL[r.payment_status ?? '']}</span>
+                  {r.total_cents != null ? ` ${euro(r.total_cents)}` : ''}
+                  {r.payment_status === 'failed' && r.payment_error ? <em style={{ color: '#8B867B' }}> — {r.payment_error}</em> : null}
+                </p>
               )}
 
               {r.notes && <p className={styles.roomNoteQuote}>"{r.notes}"</p>}
