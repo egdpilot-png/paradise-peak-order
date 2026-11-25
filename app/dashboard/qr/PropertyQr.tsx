@@ -35,7 +35,7 @@ export function PropertyQr({ qrDataUrl, emailQrDataUrl, joinUrl, emailUrl }: {
       <div class="url">${joinUrl.replace('https://', '')}</div>
       <div class="rules">
         <p><b>Scan to register and book your nights.</b> Monday &amp; Friday: Caribbean buffet €55 pp. Tue, Wed, Thu: fixed menu of the day, plated, priced per dish. Saturday: pizza night. Served from 19:00. Change or cancel free until 10:00 on the day.</p>
-        <p><b>Scannez pour vous inscrire et réserver vos soirées.</b> Lundi &amp; vendredi : buffet caribéen 55 € pp. Mar–sam : menu du jour à l'assiette, prix par plat. Service à partir de 19 h. Modification ou annulation gratuite jusqu'à 10 h le jour même.</p>
+        <p><b>Scannez pour vous inscrire et réserver vos soirées.</b> Lundi &amp; vendredi : buffet caribéen 55 € pp. Mar, mer, jeu : menu du jour à l'assiette, prix par plat. Samedi : soirée pizza. Service à partir de 19 h. Modification ou annulation gratuite jusqu'à 10 h le jour même.</p>
         <p>Fewer than 4 guests dining that night: dinner delivered and served by the Paradise Peak team · Adults only · Allergies: tell us when you register.</p>
       </div>
       <script>window.onload=()=>{window.print();}</script>
