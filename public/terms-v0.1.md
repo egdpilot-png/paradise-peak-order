@@ -37,7 +37,7 @@ Items marked **[DECISION]** need a yes/no or a figure from Eugene, Hugh or Thess
 3.1 Guests book through the Pirate by Night page for The Paradise Peak, reached by scanning the QR code displayed at the property or through the link in their booking confirmation email from The Paradise Peak.
 3.2 A guest registers once with their name, room or booking reference, arrival and departure dates, email address, mobile number, number of adults and preferred language (English or French).
 3.3 Guests may book any available night of their stay, before arrival or during it, as long as the booking is made before 10:00 on the day of the dinner.
-3.4 A valid payment card is saved securely at the time of booking (see section 5). No amount is taken at booking.
+3.4 A valid payment card is saved securely with the guest's first booking (see section 5). No amount is taken at booking. A booking is confirmed only once the card has been saved; a night still without a card at 10:00 on the day of the dinner is not booked.
 3.5 Each booking is confirmed by email, with the chosen night(s), dishes, number of covers and the total.
 
 ### 4. Changes and cancellations
@@ -52,7 +52,7 @@ Items marked **[DECISION]** need a yes/no or a figure from Eugene, Hugh or Thess
 
 5.1 Payments are processed by Stripe on behalf of SAS ALLEN. Card details are stored by Stripe only; Pirate by Night and The Paradise Peak never see or keep the full card number.
 5.2 The saved card is charged automatically at 10:00 on the day of each booked dinner. A receipt is emailed to the guest.
-5.3 If a charge fails, the guest is notified immediately by email and WhatsApp and must provide another card before **12:00** the same day. If no payment is received by 12:00, the night is cancelled.
+5.3 If a charge fails, the guest is notified immediately by email and must save another card before **12:00** the same day; the night is charged as soon as the new card is saved. If no payment is received by 12:00, the night is cancelled.
 5.4 Refunds, when due under these conditions, are made to the same card within 5 to 10 working days.
 
 ### 6. Minimum number of covers and service format
@@ -134,7 +134,7 @@ Items marked **[DECISION]** need a yes/no or a figure from Eugene, Hugh or Thess
 3.1 Les hôtes réservent sur la page Pirate by Night dédiée à The Paradise Peak, accessible en scannant le QR code affiché dans l'établissement ou par le lien figurant dans l'e-mail de confirmation de séjour envoyé par The Paradise Peak.
 3.2 L'hôte s'inscrit une seule fois avec son nom, sa chambre ou sa référence de réservation, ses dates d'arrivée et de départ, son adresse e-mail, son numéro de mobile, le nombre d'adultes et sa langue (anglais ou français).
 3.3 L'hôte peut réserver toute soirée disponible de son séjour, avant son arrivée ou pendant, à condition de réserver avant 10 h 00 le jour du dîner.
-3.4 Une carte bancaire valide est enregistrée de façon sécurisée au moment de la réservation (voir article 5). Aucun montant n'est prélevé à la réservation.
+3.4 Une carte bancaire valide est enregistrée de façon sécurisée lors de la première réservation (voir article 5). Aucun montant n'est prélevé à la réservation. La réservation n'est confirmée qu'une fois la carte enregistrée ; une soirée toujours sans carte à 10 h 00 le jour du dîner n'est pas réservée.
 3.5 Chaque réservation est confirmée par e-mail, avec la ou les soirées choisies, les plats, le nombre de couverts et le total.
 
 ### 4. Modifications et annulations
@@ -149,7 +149,7 @@ Items marked **[DECISION]** need a yes/no or a figure from Eugene, Hugh or Thess
 
 5.1 Les paiements sont traités par Stripe pour le compte de SAS ALLEN. Les données de carte sont conservées uniquement par Stripe ; ni Pirate by Night ni The Paradise Peak ne voient ni ne conservent le numéro complet de la carte.
 5.2 La carte enregistrée est débitée automatiquement à 10 h 00 le jour de chaque dîner réservé. Un reçu est envoyé par e-mail.
-5.3 En cas d'échec du prélèvement, l'hôte est prévenu immédiatement par e-mail et WhatsApp et doit fournir une autre carte avant **12 h 00** le même jour. Sans paiement à 12 h 00, la soirée est annulée.
+5.3 En cas d'échec du prélèvement, l'hôte est prévenu immédiatement par e-mail et doit enregistrer une autre carte avant **12 h 00** le même jour ; la soirée est débitée dès l'enregistrement de la nouvelle carte. Sans paiement à 12 h 00, la soirée est annulée.
 5.4 Les remboursements dus au titre des présentes conditions sont effectués sur la même carte sous 5 à 10 jours ouvrés.
 
 ### 6. Nombre minimum de couverts et formule de service
