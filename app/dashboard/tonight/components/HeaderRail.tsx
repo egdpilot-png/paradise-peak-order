@@ -4,7 +4,7 @@ import type { TonightSummary } from '@/lib/dashboard';
 import styles from '../dashboard.module.css';
 
 const WINDOW_LABEL: Record<TonightSummary['windowState'], string> = {
-  not_yet_open: 'Menu not yet published',
+  not_yet_open: 'Menu open for booking · closes at 10:00 on the day',
   open: 'Ordering open · closes at 10:00',
   late: 'Late window · kitchen prepping',
   past_hard_lock: 'Hard-locked · chef\'s choice for missing',
@@ -18,6 +18,12 @@ const WINDOW_TONE: Record<TonightSummary['windowState'], string> = {
   past_hard_lock: styles.toneCrit,
   past_service: styles.toneMuted,
 };
+
+/** A night further ahead is open for booking as soon as its menu is published. */
+function windowLabel(summary: TonightSummary): string {
+  if (summary.windowState === 'not_yet_open' && !summary.menu) return 'Menu not yet published';
+  return WINDOW_LABEL[summary.windowState];
+}
 
 function serviceLabel(s: string | null): string {
   if (!s) return 'No menu published';
@@ -58,8 +64,8 @@ export function HeaderRail({
         </nav>}
       </div>
       <div className={styles.headerRight}>
-        <span className={`${styles.chip} ${WINDOW_TONE[summary.windowState]}`}>
-          {WINDOW_LABEL[summary.windowState]}
+        <span className={`${styles.chip} ${summary.windowState === 'not_yet_open' && summary.menu ? styles.toneGood : WINDOW_TONE[summary.windowState]}`}>
+          {windowLabel(summary)}
         </span>
         <div className={styles.liveDot} aria-hidden />
         <span className={styles.liveText}>
