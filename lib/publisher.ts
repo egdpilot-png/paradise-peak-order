@@ -187,7 +187,8 @@ export async function upsertDish(dish: Partial<DishLibraryItem> & { name: string
       dietary_ok: dish.dietary_ok ?? [],
       cost_est_eur: dish.cost_est_eur ?? null,
       price_eur: dish.price_eur ?? null,
-      photo_url: dish.photo_url ?? null,
+      // photo_url is only written when the caller sends it: a price edit must not wipe the photo.
+      ...(dish.photo_url !== undefined ? { photo_url: dish.photo_url } : {}),
       active: dish.active ?? true,
       updated_at: new Date().toISOString(),
     })
@@ -311,4 +312,74 @@ export async function publishSeason(
     firstDate: todo[0]?.service_date ?? null,
     lastDate: todo[todo.length - 1]?.service_date ?? null,
   };
+}
+
+
+// -------- Dish photos --------
+
+export const DISH_PHOTO_BUCKET = 'dish-photos';
+const PHOTO_TYPES: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
+export const DISH_PHOTO_MAX_BYTES = 4 * 1024 * 1024;
+
+export function dishPhotoExtension(mime: string): string | null {
+  return PHOTO_TYPES[mime] ?? null;
+}
+
+/** Storage path of a photo we uploaded ourselves (null for demo or external photos). */
+function storedPathOf(photoUrl: string | null): string | null {
+  if (!photoUrl) return null;
+  const marker = `/storage/v1/object/public/${DISH_PHOTO_BUCKET}/`;
+  const at = photoUrl.indexOf(marker);
+  return at >= 0 ? decodeURIComponent(photoUrl.slice(at + marker.length).split('?')[0]) : null;
+}
+
+/** Store a photo for a dish and point the dish at it. Replaces any earlier upload. */
+export async function setDishPhoto(dishId: string, bytes: Buffer, mime: string): Promise<DishLibraryItem> {
+  const ext = dishPhotoExtension(mime);
+  if (!ext) throw new Error('unsupported image type');
+  const sb = admin();
+  const { data: current, error: findErr } = await sb.from('dish_library').select('id, photo_url').eq('id', dishId).maybeSingle();
+  if (findErr) throw findErr;
+  if (!current) throw new Error('dish not found');
+
+  // A new file name each time, so phones and browsers never show the old picture from cache.
+  const path = `dishes/${dishId}-${Date.now()}.${ext}`;
+  const { error: upErr } = await sb.storage.from(DISH_PHOTO_BUCKET).upload(path, bytes, {
+    contentType: mime, cacheControl: '31536000', upsert: false,
+  });
+  if (upErr) throw upErr;
+  const publicUrl = sb.storage.from(DISH_PHOTO_BUCKET).getPublicUrl(path).data.publicUrl;
+
+  const { data: saved, error: saveErr } = await sb
+    .from('dish_library')
+    .update({ photo_url: publicUrl, updated_at: new Date().toISOString() })
+    .eq('id', dishId)
+    .select('*')
+    .single();
+  if (saveErr) {
+    await sb.storage.from(DISH_PHOTO_BUCKET).remove([path]);
+    throw saveErr;
+  }
+
+  const old = storedPathOf((current as any).photo_url ?? null);
+  if (old && old !== path) await sb.storage.from(DISH_PHOTO_BUCKET).remove([old]);
+  return saved as DishLibraryItem;
+}
+
+/** Remove the photo of a dish (and the stored file when it was uploaded here). */
+export async function clearDishPhoto(dishId: string): Promise<DishLibraryItem> {
+  const sb = admin();
+  const { data: current, error: findErr } = await sb.from('dish_library').select('id, photo_url').eq('id', dishId).maybeSingle();
+  if (findErr) throw findErr;
+  if (!current) throw new Error('dish not found');
+  const { data: saved, error } = await sb
+    .from('dish_library')
+    .update({ photo_url: null, updated_at: new Date().toISOString() })
+    .eq('id', dishId)
+    .select('*')
+    .single();
+  if (error) throw error;
+  const old = storedPathOf((current as any).photo_url ?? null);
+  if (old) await sb.storage.from(DISH_PHOTO_BUCKET).remove([old]);
+  return saved as DishLibraryItem;
 }

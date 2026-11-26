@@ -327,3 +327,144 @@
 }
 .weekList li:last-child { border-bottom: none; }
 .weekDay { font-weight: 600; color: var(--ink); }
+
+
+/* ---------- Dish photos ---------- */
+/* A card with a photo: picture on the left (opens the large photo), text on the right (selects the dish). */
+.choiceWithPhoto {
+  display: flex;
+  align-items: stretch;
+  padding: 0;
+  overflow: hidden;
+  cursor: default;
+}
+.choiceWithPhoto:active { transform: none; }
+.choiceBody {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  text-align: left;
+  padding: 16px 18px;
+  background: none;
+  border: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+.choiceBody > :last-child { margin-bottom: 0; }
+div.choiceBody { cursor: default; }
+.choiceBody:disabled { cursor: default; }
+.choiceBody:focus-visible, .choiceThumb:focus-visible, .viewerClose:focus-visible, .viewerChoose:focus-visible {
+  outline: 2px solid #B8873F;
+  outline-offset: -2px;
+}
+.choiceThumb {
+  position: relative;
+  flex: 0 0 108px;
+  min-height: 108px;
+  padding: 0;
+  border: 0;
+  background: #EDE6D8;
+  cursor: zoom-in;
+  overflow: hidden;
+}
+.choiceThumb img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.choiceThumbZoom {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: rgba(28, 26, 23, 0.62);
+  color: #F5F1EA;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+@media (max-width: 360px) {
+  .choiceThumb { flex-basis: 92px; min-height: 92px; }
+  .choiceBody { padding: 14px 14px; }
+}
+
+.viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(28, 26, 23, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
+}
+.viewerInner {
+  position: relative;
+  width: 100%;
+  max-width: 640px;
+  background: #F5F1EA;
+  border-radius: 8px;
+  overflow: hidden;
+  margin: auto;
+}
+.viewerImg {
+  display: block;
+  width: 100%;
+  max-height: 62vh;
+  object-fit: cover;
+  background: #EDE6D8;
+  aspect-ratio: 4 / 3;
+}
+.viewerClose {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(28, 26, 23, 0.78);
+  color: #F5F1EA;
+  cursor: pointer;
+}
+.viewerCaption { padding: 18px 20px 20px; }
+.viewerName {
+  font-family: Georgia, serif;
+  font-size: 20px;
+  line-height: 1.25;
+  margin: 0 0 6px;
+  color: #1C1A17;
+}
+.viewerDesc { font-size: 14px; line-height: 1.5; color: #4A463F; margin: 0 0 8px; }
+.viewerNote { font-size: 12px; font-style: italic; color: #6E6A60; margin: 0; }
+.viewerChoose {
+  display: block;
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px 16px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  border: 0;
+  border-radius: 6px;
+  background: #1C1A17;
+  color: #F5F1EA;
+  cursor: pointer;
+}

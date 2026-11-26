@@ -56,7 +56,20 @@ export async function loadMenuForDate(serviceDate: string): Promise<Menu | null>
     .order('course')
     .order('display_order');
 
-  return { ...menu, items: (items ?? []) as MenuItem[] } as Menu;
+  // Photos live on the dish library, so a photo added in the back office shows
+  // on every night that serves the dish without re-publishing the season.
+  const list = (items ?? []) as (MenuItem & { dish_library_id?: string | null })[];
+  const libIds = Array.from(new Set(list.map((i) => i.dish_library_id).filter(Boolean))) as string[];
+  if (libIds.length) {
+    const { data: lib } = await sbService().from('dish_library').select('id, photo_url').in('id', libIds);
+    const photoById = new Map((lib ?? []).map((d: any) => [d.id as string, (d.photo_url as string | null) || null]));
+    for (const it of list) {
+      const fromLib = it.dish_library_id ? photoById.get(it.dish_library_id) : null;
+      it.photo_url = fromLib || it.photo_url || null;
+    }
+  }
+
+  return { ...menu, items: list as MenuItem[] } as Menu;
 }
 
 export async function loadGuestByRoom(room: string, onDate: string): Promise<Guest | null> {

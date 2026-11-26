@@ -365,6 +365,7 @@ export function PublisherEditor({ context }: Props) {
             onAdd={(dish) => addDish(focusDate, dish)}
             onCreated={onDishCreated}
             onPriceChange={onPriceChange}
+            onPhotoChange={(dish, what) => { mergeLibrary(dish); setStatus(what === 'saved' ? `Photo saved · ${dish.name}. Guests see it straight away.` : `Photo removed · ${dish.name}`); }}
             focusLabel={shortLabel(focusDate)}
           />
         </aside>

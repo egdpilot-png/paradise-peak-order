@@ -53,6 +53,7 @@ export function GuestPreview({ state, label, dishById }: Props) {
                     if (!d) return null;
                     return (
                       <div key={id} className={!isBuffet && i === 0 ? styles.previewChoiceOn : styles.previewChoice}>
+                        {d.photo_url && <img className={styles.previewChoiceThumb} src={d.photo_url} alt="" loading="lazy" />}
                         <span className={styles.previewChoiceName}>
                           {d.name}{!isBuffet && d.price_eur != null ? ` · ${d.price_eur} €` : ''}
                         </span>

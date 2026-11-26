@@ -4,7 +4,7 @@
 //   buffet → covers only, flat price per adult
 //   plated → each person in the party picks their own starter / main / dessert
 
-import { useMemo, useState, useTransition } from 'react';
+import { useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Menu, MenuItem, Guest, Course, DietaryFlag, Order } from '@/lib/types';
 import { formatServiceDate, formatEuro, isPizzaNight, BUFFET_PRICE_CENTS } from '@/lib/time';
@@ -42,6 +42,82 @@ function itemBlockedByGuest(item: MenuItem, guest: Guest | null): boolean {
   if (flags.has('gluten_free') && item.allergens.includes('gluten')) return true;
   if (flags.has('dairy_free') && item.allergens.includes('dairy')) return true;
   return false;
+}
+
+/** Text block of a dish card: name, description, allergens, price. */
+function DishText({ item, lang, showPrice }: { item: MenuItem; lang: 'en' | 'fr'; showPrice: boolean }) {
+  return (
+    <>
+      <span className={styles.choiceName}>{lang === 'fr' && item.name_fr ? item.name_fr : item.name}</span>
+      {item.description && <span className={styles.choiceDesc}>{lang === 'fr' && item.description_fr ? item.description_fr : item.description}</span>}
+      {item.allergens.length > 0 && <span className={styles.choiceAllergens}>{item.allergens.join(' · ')}</span>}
+      {showPrice && item.price_cents != null && <span className={styles.choicePrice}>{formatEuro(item.price_cents, lang)}</span>}
+    </>
+  );
+}
+
+/** Small photo at the left of a dish card. Pressing it opens the large photo; it never selects the dish. */
+function DishThumb({ item, lang, onOpen }: { item: MenuItem; lang: 'en' | 'fr'; onOpen: (item: MenuItem, opener: HTMLElement) => void }) {
+  const [broken, setBroken] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+  // A picture that failed before the page became interactive never fires onError: check once on mount.
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img && img.complete && img.naturalWidth === 0) setBroken(true);
+  }, [item.photo_url]);
+  if (!item.photo_url || broken) return null;
+  const name = lang === 'fr' && item.name_fr ? item.name_fr : item.name;
+  return (
+    <button
+      type="button"
+      className={styles.choiceThumb}
+      onClick={(e) => onOpen(item, e.currentTarget)}
+      aria-label={lang === 'fr' ? `Agrandir la photo : ${name}` : `Enlarge photo: ${name}`}
+    >
+      <img ref={imgRef} src={item.photo_url} alt="" loading="lazy" decoding="async" onError={() => setBroken(true)} />
+      <span className={styles.choiceThumbZoom} aria-hidden="true">
+        <svg viewBox="0 0 16 16" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M9.5 2.5h4v4M13.5 2.5 9 7M6.5 13.5h-4v-4M2.5 13.5 7 9" />
+        </svg>
+      </span>
+    </button>
+  );
+}
+
+/** Large photo of one dish, over the page. */
+function PhotoViewer({ item, lang, canChoose, chosen, onChoose, onClose }: {
+  item: MenuItem; lang: 'en' | 'fr'; canChoose: boolean; chosen: boolean; onChoose: () => void; onClose: () => void;
+}) {
+  const closeRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', onKey);
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    closeRef.current?.focus();
+    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = previous; };
+  }, [onClose]);
+  const fr = lang === 'fr';
+  const name = fr && item.name_fr ? item.name_fr : item.name;
+  const desc = fr && item.description_fr ? item.description_fr : item.description;
+  return (
+    <div className={styles.viewer} role="dialog" aria-modal="true" aria-label={name} onClick={onClose}>
+      <div className={styles.viewerInner} onClick={(e) => e.stopPropagation()}>
+        <button ref={closeRef} type="button" className={styles.viewerClose} onClick={onClose}>{fr ? 'Fermer' : 'Close'}</button>
+        <img className={styles.viewerImg} src={item.photo_url ?? ''} alt={name} />
+        <div className={styles.viewerCaption}>
+          <p className={styles.viewerName}>{name}{item.price_cents != null ? ` · ${formatEuro(item.price_cents, lang)}` : ''}</p>
+          {desc && <p className={styles.viewerDesc}>{desc}</p>}
+          <p className={styles.viewerNote}>{fr ? 'Photo non contractuelle : suggestion de présentation.' : 'Serving suggestion: your plate may look different.'}</p>
+          {canChoose && (
+            <button type="button" className={styles.viewerChoose} onClick={onChoose}>
+              {chosen ? (fr ? 'Plat choisi' : 'Dish chosen') : (fr ? 'Choisir ce plat' : 'Choose this dish')}
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function NightForm({ token, menu, guest, existing, canEdit, lang, paymentsOn, hasCard }: Props) {
@@ -108,6 +184,20 @@ export function NightForm({ token, menu, guest, existing, canEdit, lang, payment
   }
 
   const seatComplete = (st: Seat) => COURSES.every((c) => itemsByCourse[c.key].length === 0 || !!st[c.key]);
+  // Large photo of a dish (opened from its thumbnail).
+  const [viewing, setViewing] = useState<{ item: MenuItem; course: Course | null } | null>(null);
+  const openerRef = useRef<HTMLElement | null>(null);
+  const closeViewer = useMemo(() => () => {
+    setViewing(null);
+    openerRef.current?.focus();
+  }, []);
+  const anyPhoto = useMemo(() => menu.items.some((i) => !!i.photo_url), [menu.items]);
+  const photoNote = anyPhoto ? (
+    <p className={styles.finePrint} style={{ marginTop: 10 }}>
+      {t('Photos are serving suggestions: your plate may look different. Tap a photo to enlarge it.', 'Photos non contractuelles : suggestions de présentation. Touchez une photo pour l\u2019agrandir.')}
+    </p>
+  ) : null;
+
   const [notes, setNotes] = useState(existing?.notes ?? '');
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<Order | null>(null);
@@ -249,14 +339,14 @@ export function NightForm({ token, menu, guest, existing, canEdit, lang, payment
           <h2 className={styles.courseTitle}>{t('The buffet', 'Le buffet')}</h2>
           <div className={styles.choices}>
             {menu.items.map((item) => (
-              <div key={item.id} className={styles.choice} style={{ cursor: 'default' }}>
-                <span className={styles.choiceName}>{lang === 'fr' && item.name_fr ? item.name_fr : item.name}</span>
-                {item.description && <span className={styles.choiceDesc}>{lang === 'fr' && item.description_fr ? item.description_fr : item.description}</span>}
-                {item.allergens.length > 0 && <span className={styles.choiceAllergens}>{item.allergens.join(' · ')}</span>}
+              <div key={item.id} className={`${styles.choice} ${item.photo_url ? styles.choiceWithPhoto : ''}`} style={{ cursor: 'default' }}>
+                <DishThumb item={item} lang={lang} onOpen={(it, el) => { openerRef.current = el; setViewing({ item: it, course: null }); }} />
+                <div className={styles.choiceBody}><DishText item={item} lang={lang} showPrice={false} /></div>
               </div>
             ))}
           </div>
           <p className={styles.finePrint}>{formatEuro(coverPrice, lang)} {t('per adult, all included except drinks.', 'par adulte, tout compris sauf boissons.')}</p>
+          {photoNote}
         </section>
       ) : (
         <>
@@ -300,20 +390,34 @@ export function NightForm({ token, menu, guest, existing, canEdit, lang, payment
               <div className={styles.choices}>
                 {itemsByCourse[c.key].map((item) => {
                   const selected = seats[activeSeat][c.key] === item.id;
+                  if (!item.photo_url) {
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        disabled={!canEdit}
+                        className={selected ? styles.choiceSelected : styles.choice}
+                        onClick={() => choose(activeSeat, c.key, item.id)}
+                        aria-pressed={selected}
+                      >
+                        <DishText item={item} lang={lang} showPrice />
+                      </button>
+                    );
+                  }
+                  // With a photo: the picture enlarges, the text selects the dish.
                   return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      disabled={!canEdit}
-                      className={selected ? styles.choiceSelected : styles.choice}
-                      onClick={() => choose(activeSeat, c.key, item.id)}
-                      aria-pressed={selected}
-                    >
-                      <span className={styles.choiceName}>{lang === 'fr' && item.name_fr ? item.name_fr : item.name}</span>
-                      {item.description && <span className={styles.choiceDesc}>{lang === 'fr' && item.description_fr ? item.description_fr : item.description}</span>}
-                      {item.allergens.length > 0 && <span className={styles.choiceAllergens}>{item.allergens.join(' · ')}</span>}
-                      {item.price_cents != null && <span className={styles.choicePrice}>{formatEuro(item.price_cents, lang)}</span>}
-                    </button>
+                    <div key={item.id} className={`${selected ? styles.choiceSelected : styles.choice} ${styles.choiceWithPhoto}`}>
+                      <DishThumb item={item} lang={lang} onOpen={(it, el) => { openerRef.current = el; setViewing({ item: it, course: c.key }); }} />
+                      <button
+                        type="button"
+                        disabled={!canEdit}
+                        className={styles.choiceBody}
+                        onClick={() => choose(activeSeat, c.key, item.id)}
+                        aria-pressed={selected}
+                      >
+                        <DishText item={item} lang={lang} showPrice />
+                      </button>
+                    </div>
                   );
                 })}
               </div>
@@ -325,16 +429,17 @@ export function NightForm({ token, menu, guest, existing, canEdit, lang, payment
               <h2 className={styles.courseTitle}>{t('Served with', 'Accompagnements')}</h2>
               <div className={styles.choices}>
                 {sides.map((item) => (
-                  <div key={item.id} className={styles.choice} style={{ cursor: 'default' }}>
-                    <span className={styles.choiceName}>{lang === 'fr' && item.name_fr ? item.name_fr : item.name}</span>
-                    {item.description && <span className={styles.choiceDesc}>{lang === 'fr' && item.description_fr ? item.description_fr : item.description}</span>}
-                    {item.allergens.length > 0 && <span className={styles.choiceAllergens}>{item.allergens.join(' · ')}</span>}
+                  <div key={item.id} className={`${styles.choice} ${item.photo_url ? styles.choiceWithPhoto : ''}`} style={{ cursor: 'default' }}>
+                    <DishThumb item={item} lang={lang} onOpen={(it, el) => { openerRef.current = el; setViewing({ item: it, course: null }); }} />
+                    <div className={styles.choiceBody}><DishText item={item} lang={lang} showPrice={false} /></div>
                   </div>
                 ))}
               </div>
               <p className={styles.finePrint}>{t('Sides are served with the main course and included in its price.', 'Les accompagnements sont servis avec le plat et compris dans son prix.')}</p>
             </section>
           )}
+
+          {photoNote}
 
           <section className={styles.course}>
             <label className={styles.field}>
@@ -423,6 +528,17 @@ export function NightForm({ token, menu, guest, existing, canEdit, lang, payment
           </p>
         )}
       </section>
+
+      {viewing && (
+        <PhotoViewer
+          item={viewing.item}
+          lang={lang}
+          canChoose={canEdit && viewing.course != null}
+          chosen={viewing.course != null && seats[activeSeat][viewing.course] === viewing.item.id}
+          onChoose={() => { if (viewing.course) choose(activeSeat, viewing.course, viewing.item.id); closeViewer(); }}
+          onClose={closeViewer}
+        />
+      )}
     </>
   );
 }
