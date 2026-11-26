@@ -19,7 +19,7 @@ const FLAGS: { key: string; en: string; fr: string }[] = [
   { key: 'halal', en: 'Halal', fr: 'Halal' },
 ];
 
-export function JoinForm({ src, initialLang }: { src: string; initialLang: 'en' | 'fr' }) {
+export function JoinForm({ src, initialLang, cardRequired }: { src: string; initialLang: 'en' | 'fr'; cardRequired: boolean }) {
   const [lang, setLang] = useState<'en' | 'fr'>(initialLang);
   const [state, action] = useFormState<JoinResult | null, FormData>(registerGuest, null);
   const t = (en: string, fr: string) => (lang === 'fr' ? fr : en);
@@ -135,12 +135,12 @@ export function JoinForm({ src, initialLang }: { src: string; initialLang: 'en' 
         {state && !state.ok && <p className={styles.error}>{state.error}</p>}
 
         <SubmitButton label={t('Continue to the menus', 'Voir les menus')} pendingLabel={t('One moment…', 'Un instant…')} />
-        <p className={styles.finePrint}>
+        {cardRequired && <p className={styles.finePrint}>
           {t(
             'A card will be requested before your first booking is confirmed. Nothing is charged until 10:00 on the day of the dinner.',
             'Une carte vous sera demandée avant la confirmation de votre première réservation. Rien n\u2019est prélevé avant 10 h le jour du dîner.',
           )}
-        </p>
+        </p>}
       </form>
     </main>
   );

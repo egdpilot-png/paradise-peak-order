@@ -3,6 +3,7 @@
 
 import type { Metadata } from 'next';
 import { JoinForm } from './JoinForm';
+import { stripeEnabled } from '@/lib/stripe';
 
 export const metadata: Metadata = {
   title: 'Dinner at the Peak · Pirate by Night',
@@ -15,5 +16,5 @@ export default async function JoinPage({ searchParams }: Props) {
   const sp = await searchParams;
   const src = sp.src === 'email' ? 'email' : 'qr';
   const lang = sp.lang === 'fr' ? 'fr' : 'en';
-  return <JoinForm src={src} initialLang={lang} />;
+  return <JoinForm src={src} initialLang={lang} cardRequired={stripeEnabled()} />;
 }
